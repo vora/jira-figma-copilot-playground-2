@@ -16,6 +16,8 @@ jobs:
         # (You should implement verification of JIRA_WEBHOOK_SECRET if desired)
         run: |
           echo "Webhook payload: $GITHUB_EVENT_PATH"
+          cat "$GITHUB_EVENT_PATH"
+
       
       - name: Extract issue and figma data
         id: extract
