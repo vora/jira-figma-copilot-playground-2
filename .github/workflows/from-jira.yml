@@ -25,10 +25,10 @@ jobs:
           SUMMARY=$(jq -r .client_payload.summary < "$GITHUB_EVENT_PATH")
           DESCRIPTION=$(jq -r .client_payload.description < "$GITHUB_EVENT_PATH")
           FIGMA_URL=$(jq -r .client_payload.figma_link < "$GITHUB_EVENT_PATH")
-          echo "::set-output name=issue_key::$ISSUE_KEY"
-          echo "::set-output name=summary::$SUMMARY"
-          echo "::set-output name=description::$DESCRIPTION"
-          echo "::set-output name=figma_url::$FIGMA_URL"
+          echo "issue_key=$ISSUE_KEY" >> $GITHUB_OUTPUT
+          echo "summary=$SUMMARY" >> $GITHUB_OUTPUT
+          echo "description=$DESCRIPTION" >> $GITHUB_OUTPUT
+          echo "figma_url=$FIGMA_URL" >> $GITHUB_OUTPUT
 
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -36,11 +36,11 @@ jobs:
       - name: Fetch Figma file metadata
         id: figma
         run: |
-          FILE_ID=$(echo "${{ steps.extract.outputs.figma_urls }}" | sed -E 's|https://www.figma.com/file/([^/?]+).*|\1|')
+          FILE_ID=$(echo "${{ steps.extract.outputs.figma_url }}" | sed -E 's|https://www.figma.com/file/([^/?]+).*|\1|')
           curl -H "X-Figma-Token: $FIGMA_TOKEN" \
                "https://api.figma.com/v1/files/$FILE_ID" \
                -o figma-data.json
-          echo "::set-output name=figma_file_id::$FILE_ID"
+          echo "figma_file_id=$FILE_ID" >> $GITHUB_OUTPUT
 
       - name: Create workspace payload
         id: payload
@@ -51,28 +51,37 @@ jobs:
             "summary": "${{ steps.extract.outputs.summary }}",
             "description": "${{ steps.extract.outputs.description }}",
             "figmaFileId": "${{ steps.figma.outputs.figma_file_id }}",
-            "figmaMetadata": $(jq . < figma-data.json)
+            "figmaMetadata": $(jq -c . < figma-data.json)
           }
           EOF
 
       - name: Generate modal via Anthropic
         env:
-            ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
         run: |
-          RESPONSE=$(curl https://api.anthropic.com/v1/complete \
-          -H "Content-Type: application/json" \
-          -H "Authorization: Bearer $ANTHROPIC_API_KEY" \
-          -d '{
-        "model": "claude-2",
-        "prompt": "Write a React TypeScript modal component for the following Jira description:\n'"${{ steps.extract.outputs.description }}"'\nFigma link: '"${{ steps.extract.outputs.figma_url }}"'",
-        "max_tokens_to_sample": 2000,
-        "temperature": 0.2
-      }')
+          DESCRIPTION="${{ steps.extract.outputs.description }}"
+          FIGMA_URL="${{ steps.extract.outputs.figma_url }}"
+          
+          RESPONSE=$(curl https://api.anthropic.com/v1/messages \
+            -H "Content-Type: application/json" \
+            -H "x-api-key: $ANTHROPIC_API_KEY" \
+            -H "anthropic-version: 2023-06-01" \
+            -d @- <<EOF
+          {
+            "model": "claude-sonnet-4-20250514",
+            "max_tokens": 4096,
+            "temperature": 0.2,
+            "messages": [{
+              "role": "user",
+              "content": "Write a React TypeScript modal component for the following Jira description:\n${DESCRIPTION}\nFigma link: ${FIGMA_URL}"
+            }]
+          }
+          EOF
+          )
+          
+          echo "$RESPONSE" | jq -r '.content[0].text' > src/components/GeneratedModal.tsx
 
-    echo "$RESPONSE" | jq -r '.completion' > src/components/GeneratedModal.tsx
-
-
-      - name: Create feature branch & PR (optional)
+      - name: Create feature branch & PR
         run: |
           # Set variables from previous step outputs
           ISSUE_KEY="${{ steps.extract.outputs.issue_key }}"
