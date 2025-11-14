@@ -1,0 +1,10 @@
+{
+  "issueKey": "PLAYG-1",
+  "summary": "Implement Confirmation Modal Component",
+  "description": "Create a reusable confirmation modal component that aligns with the new design system. The modal will be used across the application for actions such as deleting items, publishing content, and confirming navigation.",
+  "figmaFileId": "",
+  "figmaMetadata": {
+  "status": 404,
+  "err": "Not found"
+}
+}
