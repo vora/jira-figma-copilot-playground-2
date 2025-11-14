@@ -25,11 +25,11 @@ jobs:
           ISSUE_KEY=$(jq -r .client_payload.issueKey < "$GITHUB_EVENT_PATH")
           SUMMARY=$(jq -r .client_payload.summary < "$GITHUB_EVENT_PATH")
           DESCRIPTION=$(jq -r .client_payload.description < "$GITHUB_EVENT_PATH")
-          FIGMA_URLS=$(jq -r .client_payload.figmaUrls[] < "$GITHUB_EVENT_PATH")
+          FIGMA_URL=$(jq -r .client_payload.figma_link < "$GITHUB_EVENT_PATH")
           echo "::set-output name=issue_key::$ISSUE_KEY"
           echo "::set-output name=summary::$SUMMARY"
           echo "::set-output name=description::$DESCRIPTION"
-          echo "::set-output name=figma_urls::$FIGMA_URLS"
+          echo "::set-output name=figma_url::$FIGMA_URL"
 
       - name: Checkout repository
         uses: actions/checkout@v4
