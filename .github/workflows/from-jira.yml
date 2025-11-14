@@ -55,15 +55,22 @@ jobs:
           }
           EOF
 
-      - name: Call Copilot Workspace API
-        id: copilot
+      - name: Generate modal via Anthropic
+        env:
+            ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
         run: |
-          echo "Calling Copilot Workspace..."
-          curl -X POST \
-               -H "Authorization: Bearer $GITHUB_TOKEN" \
-               -H "Content-Type: application/json" \
-               -d @workspace-payload.json \
-               https://api.github.com/repos/${{ github.repository }}/actions/copilot/workspaces
+          RESPONSE=$(curl https://api.anthropic.com/v1/complete \
+          -H "Content-Type: application/json" \
+          -H "Authorization: Bearer $ANTHROPIC_API_KEY" \
+          -d '{
+        "model": "claude-2",
+        "prompt": "Write a React TypeScript modal component for the following Jira description:\n'"${{ steps.extract.outputs.description }}"'\nFigma link: '"${{ steps.extract.outputs.figma_url }}"'",
+        "max_tokens_to_sample": 2000,
+        "temperature": 0.2
+      }')
+
+    echo "$RESPONSE" | jq -r '.completion' > src/components/GeneratedModal.tsx
+
 
       - name: Create feature branch & PR (optional)
         run: |
