@@ -13,7 +13,6 @@ jobs:
       GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
     steps:
       - name: Validate incoming webhook signature
-        # (You should implement verification of JIRA_WEBHOOK_SECRET if desired)
         run: |
           echo "Webhook payload: $GITHUB_EVENT_PATH"
           cat "$GITHUB_EVENT_PATH"
@@ -65,27 +64,40 @@ jobs:
         env:
           ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
         run: |
-          DESCRIPTION="${{ steps.extract.outputs.description }}"
+          # Escape values for JSON (handle quotes and newlines)
+          DESCRIPTION=$(jq -Rs . <<< "${{ steps.extract.outputs.description }}")
           FIGMA_URL="${{ steps.extract.outputs.figma_url }}"
           
-          RESPONSE=$(curl https://api.anthropic.com/v1/messages \
+          # Create the request payload
+          PAYLOAD=$(jq -n \
+            --arg desc "${{ steps.extract.outputs.description }}" \
+            --arg figma "$FIGMA_URL" \
+            '{
+              model: "claude-sonnet-4-20250514",
+              max_tokens: 4096,
+              temperature: 0.2,
+              messages: [{
+                role: "user",
+                content: ("Write a React TypeScript modal component for the following Jira description:\n" + $desc + "\nFigma link: " + $figma)
+              }]
+            }')
+          
+          # Make the API call
+          RESPONSE=$(curl -s https://api.anthropic.com/v1/messages \
             -H "Content-Type: application/json" \
             -H "x-api-key: $ANTHROPIC_API_KEY" \
             -H "anthropic-version: 2023-06-01" \
-            -d @- <<EOF
-          {
-            "model": "claude-sonnet-4-20250514",
-            "max_tokens": 4096,
-            "temperature": 0.2,
-            "messages": [{
-              "role": "user",
-              "content": "Write a React TypeScript modal component for the following Jira description:\n${DESCRIPTION}\nFigma link: ${FIGMA_URL}"
-            }]
-          }
-          EOF
-          )
+            -d "$PAYLOAD")
           
+          # Create directory if it doesn't exist
+          mkdir -p src/components
+          
+          # Extract and save the generated code
           echo "$RESPONSE" | jq -r '.content[0].text' > src/components/GeneratedModal.tsx
+          
+          # Debug: Show what was generated
+          echo "Generated file contents:"
+          cat src/components/GeneratedModal.tsx
 
       - name: Create feature branch & PR
         run: |
@@ -103,8 +115,18 @@ jobs:
           # Create new branch
           git checkout -b "$BRANCH"
 
-          # Add all generated/copilot files
-          git add .
+          # Check what files are being added
+          echo "Files to be committed:"
+          git status
+
+          # Add all generated files
+          git add src/components/GeneratedModal.tsx workspace-payload.json figma-data.json
+
+          # Only commit if there are changes
+          if git diff --staged --quiet; then
+            echo "No changes to commit"
+            exit 1
+          fi
 
           # Commit with proper message
           git commit -m "feat($ISSUE_KEY): generated feature from Copilot"
