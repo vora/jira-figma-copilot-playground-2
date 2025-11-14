@@ -65,7 +65,7 @@ jobs:
                -H "Content-Type: application/json" \
                -d @workspace-payload.json \
                https://api.github.com/repos/${{ github.repository }}/actions/copilot/workspaces
-           - name: Create feature branch & PR (optional)
+      - name: Create feature branch & PR (optional)
         run: |
           # Set variables from previous step outputs
           ISSUE_KEY="${{ steps.extract.outputs.issue_key }}"
