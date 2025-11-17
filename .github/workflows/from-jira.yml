@@ -107,6 +107,12 @@ jobs:
                 content: ("Write a React TypeScript modal component for the following Jira description:\n" + $desc + "\nFigma link: " + $figma)
               }]
             }')
+
+            
+            
+            echo "Request payload:"
+            echo "$PAYLOAD" | jq .
+
           
           # Make the API call
           RESPONSE=$(curl -s https://api.anthropic.com/v1/messages \
@@ -117,6 +123,9 @@ jobs:
           
           # Create directory if it doesn't exist
           mkdir -p src/components
+
+          echo "Full Anthropic API response:"
+          echo "$RESPONSE" | jq .
           
           # Extract and save the generated code
           echo "$RESPONSE" | jq -r '.content[0].text' > src/components/GeneratedModal.tsx
