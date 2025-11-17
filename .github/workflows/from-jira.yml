@@ -90,41 +90,33 @@ jobs:
         env:
           ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
         run: |
-          # Use Python for reliable JSON handling
-          python3 << 'PYTHON_EOF'
-          import json
-          import os
-          import subprocess
-
-          # Read the outputs
-          description = """${{ steps.extract.outputs.description }}"""
-          figma_url = """${{ steps.extract.outputs.figma_url }}"""
-
-          # Build the prompt
-          prompt = f"""Write a React TypeScript modal component for the following Jira description:
-          {description}
-
-          Figma link: {figma_url}"""
-
-          # Create the payload
-          payload = {
-              "model": "claude-sonnet-4-20250514",
-              "max_tokens": 4096,
-              "temperature": 0.2,
-              "messages": [
-                  {
-                      "role": "user",
-                      "content": prompt
-                  }
-              ]
+          # Create a temp file for the payload to avoid shell escaping issues
+          cat > payload.json <<'PAYLOAD_EOF'
+          {
+            "model": "claude-sonnet-4-20250514",
+            "max_tokens": 4096,
+            "temperature": 0.2,
+            "messages": [
+              {
+                "role": "user",
+                "content": "DESCRIPTION_PLACEHOLDER"
+              }
+            ]
           }
+          PAYLOAD_EOF
 
-          # Write to file
-          with open('final-payload.json', 'w') as f:
-              json.dump(payload, f, indent=2)
+          # Read description and figma URL into variables
+          DESC="${{ steps.extract.outputs.description }}"
+          FIGMA="${{ steps.extract.outputs.figma_url }}"
 
-          print("Payload created successfully")
-          PYTHON_EOF
+          # Build the full prompt
+          PROMPT="Write a React TypeScript modal component for the following Jira description:
+          $DESC
+          
+          Figma link: $FIGMA"
+
+          # Use jq to safely inject the content into the JSON
+          jq --arg content "$PROMPT" '.messages[0].content = $content' payload.json > final-payload.json
 
           # Debug: print payload
           echo "Payload to be sent to Anthropic:"
