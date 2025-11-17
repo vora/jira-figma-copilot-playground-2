@@ -91,23 +91,22 @@ jobs:
           ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
         run: |
           # Escape values for JSON (handle quotes and newlines)
-          DESCRIPTION=$(jq -Rs . <<< "${{ steps.extract.outputs.description }}")
-          FIGMA_URL="${{ steps.extract.outputs.figma_url }}"
+          DESCRIPTION_ESCAPED=$(jq -Rs . <<< "${{ steps.extract.outputs.description }}")
+          FIGMA_URL_ESCAPED=$(jq -Rs . <<< "${{ steps.extract.outputs.figma_url }}")
           
           # Create the request payload
           PAYLOAD=$(jq -n \
-            --arg desc "${{ steps.extract.outputs.description }}" \
-            --arg figma "$FIGMA_URL" \
+            --arg desc "$DESCRIPTION_ESCAPED" \
+            --arg figma "$FIGMA_URL_ESCAPED" \
             '{
               model: "claude-sonnet-4-20250514",
               max_tokens: 4096,
               temperature: 0.2,
               messages: [{
                 role: "user",
-                content: ("Write a React TypeScript modal component for the following Jira description:\n" + $desc + "\nFigma link: " + $figma)
+                content: ("Write a React TypeScript modal component for the following Jira description:\n" + ($desc | fromjson) + "\nFigma link: " + ($figma | fromjson))
               }]
             }')
-
             
             
             echo "Request payload:"
