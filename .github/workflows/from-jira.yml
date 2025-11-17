@@ -95,7 +95,9 @@ jobs:
           # Set variables from previous step outputs
           ISSUE_KEY="${{ steps.extract.outputs.issue_key }}"
           SUMMARY="${{ steps.extract.outputs.summary }}"
-          BRANCH="feat/$ISSUE_KEY"
+          TIMESTAMP=$(date +%Y%m%d%H%M%S)
+
+          BRANCH="feat/${ISSUE_KEY}-${TIMESTAMP}"
 
           echo "Creating branch: $BRANCH"
 
