@@ -94,7 +94,14 @@ jobs:
           -H "Content-Type: application/json" \
           -H "x-api-key: $ANTHROPIC_API_KEY" \
           -H "anthropic-version: 2023-06-01" \
-          -d '{"model":"claude-sonnet-4-20250514","max_tokens":4096,"messages":[{"role":"user","content":"hey make a modal"}]}')
+          --data \
+          '{
+            "model": "claude-sonnet-4-5-20250929",
+            "max_tokens": 1024,
+            "messages": [
+            {"role": "user", "content": "make a modal"}
+            ]
+          }'
 
           echo "Full Anthropic API response:"
           echo "$RESPONSE" | jq .
