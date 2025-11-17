@@ -90,58 +90,27 @@ jobs:
         env:
           ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
         run: |
-          # Create a temp file for the payload to avoid shell escaping issues
-          # cat > payload.json <<'PAYLOAD_EOF'
-          # {
-          #   "model": "claude-sonnet-4-20250514",
-          #   "max_tokens": 4096,
-          #   "temperature": 0.2,
-          #   "messages": [
-          #     {
-          #       "role": "user",
-          #       "content": "__PROMPT_PLACEHOLDER__"
-          #     }
-          #   ]
-          # }
-          # PAYLOAD_EOF
-
-          # # Read description and figma URL into variables
-          # DESC="${{ steps.extract.outputs.description }}"
-          # FIGMA="${{ steps.extract.outputs.figma_url }}"
-
-          # # Build the full prompt
-          # PROMPT="Write a React TypeScript modal component for the following Jira description:
-          # $DESC
-          
-          # Figma link: $FIGMA"
-
-          # # Use jq to safely inject the content into the JSON
-          # jq --arg content "$PROMPT" '.messages[0].content = $content' payload.json > final-payload.json
-
-          # # Debug: print payload
-          # echo "Payload to be sent to Anthropic:"
-          # cat final-payload.json | jq .
-
-          # Call Anthropic API
+          # Call Anthropic API with a simple test payload
           RESPONSE=$(curl -s https://api.anthropic.com/v1/messages \
-            -H "Content-Type: application/json" \
-            -H "x-api-key: $ANTHROPIC_API_KEY" \
-            -H "anthropic-version: 2023-06-01" \
-            -d '{"model": "claude-sonnet-4-20250514","max_tokens": 4096,"temperature": 0.2,"messages": [ {   "role": "user", "content": "hey make a modal" }]xw}'
+          -H "Content-Type: application/json" \
+          -H "x-api-key: $ANTHROPIC_API_KEY" \
+          -H "anthropic-version: 2023-06-01" \
+          -d '{
+          "model": "claude-sonnet-4-20250514",
+          "max_tokens": 4096,
+          "temperature": 0.2,
+          "messages": [
+            {
+              "role": "user",
+              "content": "hey make a modal"
+             }
+            ]
+           }')
 
-          # Debug: show full API response
           echo "Full Anthropic API response:"
           echo "$RESPONSE" | jq .
 
-          # Create directory if it doesn't exist
           mkdir -p src/components
-
-          # Extract generated code safely - use content[0].text for Messages API
-          echo "$RESPONSE" | jq -r '.content[0].text' > src/components/GeneratedModal.tsx
-
-          # Debug: Show what was generated
-          echo "Generated file contents:"
-          cat src/components/GeneratedModal.tsx
 
 
       - name: Create feature branch & PR
