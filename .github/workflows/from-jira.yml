@@ -90,11 +90,11 @@ jobs:
         env:
           ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
         run: |
-          # Escape values for JSON (handle quotes and newlines)
+          # Safely escape Jira description and Figma URL for JSON
           DESCRIPTION_ESCAPED=$(jq -Rs . <<< "${{ steps.extract.outputs.description }}")
           FIGMA_URL_ESCAPED=$(jq -Rs . <<< "${{ steps.extract.outputs.figma_url }}")
-          
-          # Create the request payload
+
+          # Build payload using jq to ensure valid JSON
           PAYLOAD=$(jq -n \
             --arg desc "$DESCRIPTION_ESCAPED" \
             --arg figma "$FIGMA_URL_ESCAPED" \
@@ -107,31 +107,32 @@ jobs:
                 content: ("Write a React TypeScript modal component for the following Jira description:\n" + ($desc | fromjson) + "\nFigma link: " + ($figma | fromjson))
               }]
             }')
-            
-            
-            echo "Request payload:"
-            echo "$PAYLOAD" | jq .
 
-          
-          # Make the API call
+          # Debug: print payload
+          echo "Request payload:"
+          echo "$PAYLOAD" | jq .
+
+          # Call Anthropic API
           RESPONSE=$(curl -s https://api.anthropic.com/v1/messages \
             -H "Content-Type: application/json" \
             -H "x-api-key: $ANTHROPIC_API_KEY" \
             -H "anthropic-version: 2023-06-01" \
             -d "$PAYLOAD")
-          
+
+          # Debug: show full API response
+          echo "Full Anthropic API response:"
+          echo "$RESPONSE" | jq .
+
           # Create directory if it doesn't exist
           mkdir -p src/components
 
-          echo "Full Anthropic API response:"
-          echo "$RESPONSE" | jq .
-          
-          # Extract and save the generated code
-          echo "$RESPONSE" | jq -r '.content[0].text' > src/components/GeneratedModal.tsx
-          
+          # Extract generated code safely (.completion contains the model output)
+          echo "$RESPONSE" | jq -r '.completion' > src/components/GeneratedModal.tsx
+
           # Debug: Show what was generated
           echo "Generated file contents:"
           cat src/components/GeneratedModal.tsx
+
 
       - name: Create feature branch & PR
         run: |
