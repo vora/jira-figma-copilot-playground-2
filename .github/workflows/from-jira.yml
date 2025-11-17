@@ -94,7 +94,7 @@ jobs:
           DESCRIPTION_ESCAPED=$(jq -Rs . <<< "${{ steps.extract.outputs.description }}")
           FIGMA_URL_ESCAPED=$(jq -Rs . <<< "${{ steps.extract.outputs.figma_url }}")
 
-          # Build payload using jq to ensure valid JSON
+          # Build payload using jq
           PAYLOAD=$(jq -n \
             --arg desc "$DESCRIPTION_ESCAPED" \
             --arg figma "$FIGMA_URL_ESCAPED" \
@@ -104,12 +104,12 @@ jobs:
               temperature: 0.2,
               messages: [{
                 role: "user",
-                content: ("Write a React TypeScript modal component for the following Jira description:\n" + ($desc | fromjson) + "\nFigma link: " + ($figma | fromjson))
+                content: ("Write a React TypeScript modal component for the following Jira description:\n" + $desc + "\nFigma link: " + $figma)
               }]
             }')
 
           # Debug: print payload
-          echo "Request payload:"
+          echo "Payload to be sent to Anthropic:"
           echo "$PAYLOAD" | jq .
 
           # Call Anthropic API
