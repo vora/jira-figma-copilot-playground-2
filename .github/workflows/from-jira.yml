@@ -7,13 +7,13 @@ on:
 jobs:
   generate_feature:
     runs-on: ubuntu-latest
-    environment: figma-jam
     env:
       JIRA_WEBHOOK_SECRET: ${{ secrets.JIRA_WEBHOOK_SECRET }}
       FIGMA_TOKEN: ${{ secrets.FIGMA_TOKEN }}
       GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
     steps:
       - name: Validate incoming webhook signature
+        # (You should implement verification of JIRA_WEBHOOK_SECRET if desired)
         run: |
           echo "Webhook payload: $GITHUB_EVENT_PATH"
           cat "$GITHUB_EVENT_PATH"
@@ -25,52 +25,21 @@ jobs:
           SUMMARY=$(jq -r .client_payload.summary < "$GITHUB_EVENT_PATH")
           DESCRIPTION=$(jq -r .client_payload.description < "$GITHUB_EVENT_PATH")
           FIGMA_URL=$(jq -r .client_payload.figma_link < "$GITHUB_EVENT_PATH")
-          {
-          echo "issue_key=$ISSUE_KEY"
-          echo "figma_url=$FIGMA_URL"
-          echo "summary<<EOF"
-          echo "$SUMMARY"
-          echo "EOF"
-          echo "description<<EOF"
-          echo "$DESCRIPTION"
-          echo "EOF"
-          } >> $GITHUB_OUTPUT
+          echo "issue_key=$ISSUE_KEY" >> $GITHUB_OUTPUT
+          echo "summary=$SUMMARY" >> $GITHUB_OUTPUT
+          echo "description=$DESCRIPTION" >> $GITHUB_OUTPUT
+          echo "figma_url=$FIGMA_URL" >> $GITHUB_OUTPUT
 
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Debug token presence
-        run: |
-          if [ -z "$FIGMA_TOKEN" ]; then
-            echo "FIGMA_TOKEN is missing"
-            exit 1
-          fi
-
-          echo "Token length = ${#FIGMA_TOKEN}"
-
-      - name: Test Figma token directly
-        run: |
-          curl -I -H "X-Figma-Token: $FIGMA_TOKEN" \
-            https://api.figma.com/v1/me
-
-
       - name: Fetch Figma file metadata
         id: figma
         run: |
-          FILE_ID=$(echo "${{ steps.extract.outputs.figma_url }}" \
-            | sed -E 's#https://www.figma.com/(file|design)/([^/?]+).*#\2#')
-
-          echo "Extracted FILE_ID: $FILE_ID"
-
-          if [ -z "$FILE_ID" ]; then
-            echo "ERROR: Could not extract Figma File ID"
-            exit 1
-          fi
-
+          FILE_ID=$(echo "${{ steps.extract.outputs.figma_url }}" | sed -E 's|https://www.figma.com/file/([^/?]+).*|\1|')
           curl -H "X-Figma-Token: $FIGMA_TOKEN" \
                "https://api.figma.com/v1/files/$FILE_ID" \
                -o figma-data.json
-
           echo "figma_file_id=$FILE_ID" >> $GITHUB_OUTPUT
 
       - name: Create workspace payload
@@ -90,24 +59,27 @@ jobs:
         env:
           ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
         run: |
-          RESPONSE=$(curl -s https://api.anthropic.com/v1/messages \
-          -H "Content-Type: application/json" \
-          -H "x-api-key: $ANTHROPIC_API_KEY" \
-          -H "anthropic-version: 2023-06-01" \
-          --data \
-          '{
-            "model": "claude-sonnet-4-5-20250929",
-            "max_tokens": 1024,
-            "messages": [
-            {"role": "user", "content": "make a modal"}
-            ]
-          }')
-
-          echo "Full Anthropic API response:"
-          echo "$RESPONSE" | jq .
-
-          mkdir -p src/components
-
+          DESCRIPTION="${{ steps.extract.outputs.description }}"
+          FIGMA_URL="${{ steps.extract.outputs.figma_url }}"
+          
+          RESPONSE=$(curl https://api.anthropic.com/v1/messages \
+            -H "Content-Type: application/json" \
+            -H "x-api-key: $ANTHROPIC_API_KEY" \
+            -H "anthropic-version: 2023-06-01" \
+            -d @- <<EOF
+          {
+            "model": "claude-sonnet-4-20250514",
+            "max_tokens": 4096,
+            "temperature": 0.2,
+            "messages": [{
+              "role": "user",
+              "content": "Write a React TypeScript modal component for the following Jira description:\n${DESCRIPTION}\nFigma link: ${FIGMA_URL}"
+            }]
+          }
+          EOF
+          )
+          
+          echo "$RESPONSE" | jq -r '.content[0].text' > src/components/GeneratedModal.tsx
 
       - name: Create feature branch & PR
         run: |
@@ -125,18 +97,8 @@ jobs:
           # Create new branch
           git checkout -b "$BRANCH"
 
-          # Check what files are being added
-          echo "Files to be committed:"
-          git status
-
-          # Add all generated files
-          git add src/components/GeneratedModal.tsx workspace-payload.json figma-data.json
-
-          # Only commit if there are changes
-          if git diff --staged --quiet; then
-            echo "No changes to commit"
-            exit 1
-          fi
+          # Add all generated/copilot files
+          git add .
 
           # Commit with proper message
           git commit -m "feat($ISSUE_KEY): generated feature from Copilot"
@@ -149,3 +111,8 @@ jobs:
             --title "Feature $ISSUE_KEY: $SUMMARY" \
             --body "Auto-generated scaffold from Copilot for Jira issue $ISSUE_KEY" \
             --base main
+
+
+
+
+            
