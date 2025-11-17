@@ -99,7 +99,7 @@ jobs:
             "messages": [
               {
                 "role": "user",
-                "content": "DESCRIPTION_PLACEHOLDER"
+                "content": "__PROMPT_PLACEHOLDER__"
               }
             ]
           }
