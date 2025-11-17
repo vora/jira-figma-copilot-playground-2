@@ -88,14 +88,13 @@ jobs:
 
       - name: Generate modal via Anthropic
         env:
-          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+        ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
         run: |
-          # Call Anthropic API with a simple test payload
           RESPONSE=$(curl -s https://api.anthropic.com/v1/messages \
           -H "Content-Type: application/json" \
           -H "x-api-key: $ANTHROPIC_API_KEY" \
           -H "anthropic-version: 2023-06-01" \
-          -d '{"model": "claude-sonnet-4-20250514","max_tokens": 4096,"temperature": 0.2,"messages": [{"role": "user","content": "hey make a modal"}]}')
+          -d '{"model":"claude-sonnet-4-20250514","max_tokens":4096,"temperature":0.2,"messages":[{"role":"user","content":"hey make a modal"}]}')
 
           echo "Full Anthropic API response:"
           echo "$RESPONSE" | jq .
