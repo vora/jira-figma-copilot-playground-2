@@ -90,14 +90,10 @@ jobs:
         env:
           ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
         run: |
-          # Safely escape Jira description and Figma URL for JSON
-          DESCRIPTION_ESCAPED=$(jq -Rs . <<< "${{ steps.extract.outputs.description }}")
-          FIGMA_URL_ESCAPED=$(jq -Rs . <<< "${{ steps.extract.outputs.figma_url }}")
-
-          # Build payload using jq
+          # Build payload using jq - directly pass the values without double-escaping
           PAYLOAD=$(jq -n \
-            --arg desc "$DESCRIPTION_ESCAPED" \
-            --arg figma "$FIGMA_URL_ESCAPED" \
+            --arg desc "${{ steps.extract.outputs.description }}" \
+            --arg figma "${{ steps.extract.outputs.figma_url }}" \
             '{
               model: "claude-sonnet-4-20250514",
               max_tokens: 4096,
@@ -126,8 +122,8 @@ jobs:
           # Create directory if it doesn't exist
           mkdir -p src/components
 
-          # Extract generated code safely (.completion contains the model output)
-          echo "$RESPONSE" | jq -r '.completion' > src/components/GeneratedModal.tsx
+          # Extract generated code safely - use content[0].text for Messages API
+          echo "$RESPONSE" | jq -r '.content[0].text' > src/components/GeneratedModal.tsx
 
           # Debug: Show what was generated
           echo "Generated file contents:"
