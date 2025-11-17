@@ -25,9 +25,17 @@ jobs:
           SUMMARY=$(jq -r .client_payload.summary < "$GITHUB_EVENT_PATH")
           DESCRIPTION=$(jq -r .client_payload.description < "$GITHUB_EVENT_PATH")
           FIGMA_URL=$(jq -r .client_payload.figma_link < "$GITHUB_EVENT_PATH")
+    
           echo "issue_key=$ISSUE_KEY" >> $GITHUB_OUTPUT
-          echo "summary=$SUMMARY" >> $GITHUB_OUTPUT
-          echo "description=$DESCRIPTION" >> $GITHUB_OUTPUT
+
+          echo "summary<<EOF" >> $GITHUB_OUTPUT
+          echo "$SUMMARY" >> $GITHUB_OUTPUT
+          echo "EOF" >> $GITHUB_OUTPUT
+
+          echo "description<<EOF" >> $GITHUB_OUTPUT
+          echo "$DESCRIPTION" >> $GITHUB_OUTPUT
+          echo "EOF" >> $GITHUB_OUTPUT
+
           echo "figma_url=$FIGMA_URL" >> $GITHUB_OUTPUT
 
       - name: Checkout repository
