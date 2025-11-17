@@ -101,7 +101,7 @@ jobs:
             "messages": [
             {"role": "user", "content": "make a modal"}
             ]
-          }'
+          }')
 
           echo "Full Anthropic API response:"
           echo "$RESPONSE" | jq .
