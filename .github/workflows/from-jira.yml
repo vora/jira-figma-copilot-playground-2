@@ -38,6 +38,21 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
+      - name: Debug token presence
+        run: |
+          if [ -z "$FIGMA_TOKEN" ]; then
+            echo "FIGMA_TOKEN is missing"
+            exit 1
+          fi
+
+          echo "Token length = ${#FIGMA_TOKEN}"
+
+      - name: Test Figma token directly
+        run: |
+          curl -I -H "X-Figma-Token: $FIGMA_TOKEN" \
+            https://api.figma.com/v1/me
+
+
       - name: Fetch Figma file metadata
         id: figma
         run: |
