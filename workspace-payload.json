@@ -1,0 +1,38 @@
+{
+  "issueKey": "PLAYG-1",
+  "summary": "Implement Confirmation Modal Component",
+  "description": "Create a reusable confirmation modal component that aligns with the new design system. The modal will be used across the application for actions such as deleting items, publishing content, and confirming navigation.
+
+The modal must follow the layout, spacing, typography, and interaction states defined in the Figma design.
+
+*Figma Reference*
+[https://www.figma.com/file/ABC123/mock-confirmation-modal|https://www.figma.com/file/ABC123/mock-confirmation-modal]
+
+*Requirements*
+
+# Modal opens when triggered by a parent component via state.
+# Supports a title, message body, and configurable primary/secondary buttons.
+# Modal must trap focus until closed.
+# Should close when clicking the “Cancel” button, pressing ESC, or clicking the background overlay.
+# Should be accessible (ARIA labels, roles, keyboard navigation).
+# Should be implemented with the existing UI primitives.
+# Include simple enter/exit animations.
+
+*Acceptance Criteria*
+
+* User triggers an action and the modal appears overlaying the page.
+* Modal displays title and message from passed props.
+* Buttons trigger callback functions provided by the parent.
+* Focus is correctly trapped inside the modal until it closes.
+* ESC key closes the modal.
+* Modal matches Figma design at the link above.
+* All unit tests pass.
+
+*Technical Notes*
+
+* Use existing dialog component if available; otherwise create base layer.
+* Ensure responsive behavior on mobile.
+* Add Storybook entry for the component.",
+  "figmaFileId": "ABC123",
+  "figmaMetadata": {"status":403,"err":"Invalid token"}
+}
