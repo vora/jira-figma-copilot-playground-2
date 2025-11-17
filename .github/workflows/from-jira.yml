@@ -42,7 +42,9 @@ jobs:
         id: figma
         run: |
           FILE_ID=$(echo "${{ steps.extract.outputs.figma_url }}" \
-            | sed -E |https://www.figma.com/(file|design)/([^/?]+).*|\2|')
+            | sed -E 's|https://www.figma.com/(file|design)/([^/?]+).*|\2|')
+
+          echo "Extracted FILE_ID: $FILE_ID"
 
           curl -H "X-Figma-Token: $FIGMA_TOKEN" \
                "https://api.figma.com/v1/files/$FILE_ID" \
