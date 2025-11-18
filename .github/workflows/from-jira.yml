@@ -69,8 +69,7 @@ jobs:
         run: |
           DESCRIPTION="${{ steps.extract.outputs.description }}"
           FIGMA_URL="${{ steps.extract.outputs.figma_url }}"
-          FIGMA_METADATA=$(jq -c . < figma-data.json)
-
+          
           RESPONSE=$(curl https://api.anthropic.com/v1/messages \
             -H "Content-Type: application/json" \
             -H "x-api-key: $ANTHROPIC_API_KEY" \
@@ -80,27 +79,10 @@ jobs:
             "model": "claude-sonnet-4-20250514",
             "max_tokens": 4096,
             "temperature": 0.2,
-           "messages": [{
-            "role": "user",
-            "content": [
-              {
-                "type": "text",
-                "text": "Write a React TypeScript modal component based on the following Jira description and Figma file metadata."
-              },
-              {
-                "type": "text",
-                "text": "Jira description:\n${DESCRIPTION}"
-              },
-              {
-                "type": "text",
-                "text": "Figma URL: ${FIGMA_URL}"
-              },
-              {
-              "type": "text",
-              "text": "Figma file metadata JSON:\n${FIGMA_METADATA}"
-              }
-            ]
-          }]
+            "messages": [{
+              "role": "user",
+              "content": "Write a React TypeScript modal component for the following Jira description:\n${DESCRIPTION}\nFigma link: ${FIGMA_URL}\n and the metadata Figma file metadata ${FIGMA_METADATA}"
+            }]
           }
           EOF
           )
