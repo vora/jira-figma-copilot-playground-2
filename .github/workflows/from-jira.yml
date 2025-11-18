@@ -44,7 +44,7 @@ jobs:
       - name: Fetch Figma file metadata
         id: figma
         run: |
-          FILE_ID=$(echo "${{ steps.extract.outputs.figma_url }}" | sed -E 's|https://www.figma.com/file/([^/?]+).*|\1|')
+          FILE_ID=$(echo "${{ steps.extract.outputs.figma_url }}" | grep -oP '(?<=design/|file/)[^/]+')
           curl -H "X-Figma-Token: $FIGMA_TOKEN" \
                "https://api.figma.com/v1/files/$FILE_ID" \
                -o figma-data.json
