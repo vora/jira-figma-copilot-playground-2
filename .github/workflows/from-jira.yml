@@ -128,13 +128,7 @@ jobs:
             --body "Auto-generated scaffold from Copilot for Jira issue $ISSUE_KEY" \
             --base main
           
-          PR_URL=$(gh pr create \
-            --title "Feature $ISSUE_KEY: $SUMMARY" \
-            --body "Auto-generated scaffold from Copilot for Jira issue $ISSUE_KEY" \
-            --base main)
-          PR_NUMBER=$(echo "$PR_URL" | grep -o '[0-9]\+$')
-
-          echo "pr_number=$PR_NUMBER" >> $GITHUB_OUTPUT
+          
 
 
       - name: Request Copilot review
