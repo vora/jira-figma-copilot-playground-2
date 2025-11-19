@@ -1,5 +1,10 @@
 name: Jira → Feature Generator
 
+permissions:
+  contents: write
+  pull-requests: write
+  id-token: write
+
 on:
   repository_dispatch:
     types: [jira_issue_ready_for_dev]
