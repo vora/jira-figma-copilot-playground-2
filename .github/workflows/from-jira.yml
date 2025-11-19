@@ -96,6 +96,7 @@ jobs:
           echo "$RESPONSE" | jq -r '.content[0].text' > src/components/GeneratedModal.tsx
 
       - name: Create feature branch & PR
+        id: prextract
         run: |
           # Set variables from previous step outputs
           ISSUE_KEY="${{ steps.extract.outputs.issue_key }}"
@@ -128,10 +129,12 @@ jobs:
             --body "Auto-generated scaffold from Copilot for Jira issue $ISSUE_KEY" \
             --base main)
 
+          PR_NUMBER=$(gh pr view "$BRANCH" --json number --jq '.number')
 
-          PR_NUMBER=$(echo $PR_URL | grep -oP '/pull/\K\d+')
-          echo "pr_number=$PR_NUMBER" >> $GITHUB_OUTPUT
+          echo "pr_number=$PR_NUMBER" >> "$GITHUB_OUTPUT"
           echo "PR Number: $PR_NUMBER"
+
+
           
     
     
@@ -145,7 +148,7 @@ jobs:
             await github.rest.pulls.requestReviewers({
             owner: context.repo.owner,
             repo: context.repo.repo,
-            pull_number: Number(${{ steps.create_pr.outputs.pr_number }}),
+            pull_number: Number(${{ steps.prextract.outputs.pr_number }}),
             reviewers: ['github-copilot']
             });
 
