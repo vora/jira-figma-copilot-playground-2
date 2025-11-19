@@ -141,15 +141,4 @@ jobs:
           
 
 
-      - name: Request Copilot review
-        uses: actions/github-script@v7
-        with:
-          script: |
-            await github.rest.pulls.requestReviewers({
-            owner: context.repo.owner,
-            repo: context.repo.repo,
-            pull_number: Number(${{ steps.prextract.outputs.pr_number }}),
-            reviewers: ['github-copilot']
-            });
-
             
