@@ -127,21 +127,29 @@ jobs:
             --title "Feature $ISSUE_KEY: $SUMMARY" \
             --body "Auto-generated scaffold from Copilot for Jira issue $ISSUE_KEY" \
             --base main
+          
+          PR_URL=$(gh pr create \
+            --title "Feature $ISSUE_KEY: $SUMMARY" \
+            --body "Auto-generated scaffold from Copilot for Jira issue $ISSUE_KEY" \
+            --base main)
+          PR_NUMBER=$(echo "$PR_URL" | grep -o '[0-9]\+$')
+
+          echo "pr_number=$PR_NUMBER" >> $GITHUB_OUTPUT
 
 
       - name: Request Copilot review
         uses: actions/github-script@v7
         with:
           script: |
-            const pr = context.payload.pull_request;
-            if (!pr) {
-            throw new Error('No pull_request payload available');
-            }
+            const pr_number = process.env.PR_NUMBER || '${{ steps.create_pr.outputs.pr_number }}';
+            if (!pr_number) throw new Error('No PR number found');
             await github.rest.pulls.requestReviewers({
             owner: context.repo.owner,
             repo: context.repo.repo,
-            pull_number: pr.number,
+            pull_number: Number(pr_number),
             reviewers: ['github-copilot']
             });
+        env:
+         PR_NUMBER: ${{ steps.create_pr.outputs.pr_number }}
 
             
