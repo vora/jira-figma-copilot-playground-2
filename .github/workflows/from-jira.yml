@@ -14,28 +14,23 @@ jobs:
     runs-on: ubuntu-latest
     environment: figma-jam
     env:
+      JIRA_WEBHOOK_SECRET: ${{ secrets.JIRA_WEBHOOK_SECRET }}
       FIGMA_TOKEN: ${{ secrets.FIGMA_TOKEN }}
-      ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
-
+      GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
     steps:
-      # ------------------------------------------
-      # 1. Print webhook payload for debugging
-      # ------------------------------------------
-      - name: Validate incoming webhook payload
+      - name: Validate incoming webhook signature
+        # (You should implement verification of JIRA_WEBHOOK_SECRET if desired)
         run: |
-          echo "Webhook received from Jira:"
+          echo "Webhook payload: $GITHUB_EVENT_PATH"
           cat "$GITHUB_EVENT_PATH"
 
-      # ------------------------------------------
-      # 2. Parse Jira payload into outputs
-      # ------------------------------------------
-      - name: Extract issue + figma data
+      - name: Extract issue and figma data
         id: extract
         run: |
-          ISSUE_KEY=$(jq -r .client_payload.issueKey "$GITHUB_EVENT_PATH")
-          SUMMARY=$(jq -r .client_payload.summary "$GITHUB_EVENT_PATH")
-          DESCRIPTION=$(jq -r .client_payload.description "$GITHUB_EVENT_PATH")
-          FIGMA_URL=$(jq -r .client_payload.figma_link "$GITHUB_EVENT_PATH")
+          ISSUE_KEY=$(jq -r .client_payload.issueKey < "$GITHUB_EVENT_PATH")
+          SUMMARY=$(jq -r .client_payload.summary < "$GITHUB_EVENT_PATH")
+          DESCRIPTION=$(jq -r .client_payload.description < "$GITHUB_EVENT_PATH")
+          FIGMA_URL=$(jq -r .client_payload.figma_link < "$GITHUB_EVENT_PATH")
 
           echo "issue_key=$ISSUE_KEY" >> $GITHUB_OUTPUT
           echo "summary<<EOF" >> $GITHUB_OUTPUT
@@ -48,32 +43,34 @@ jobs:
 
           echo "figma_url=$FIGMA_URL" >> $GITHUB_OUTPUT
 
-      # ------------------------------------------
-      # 3. Checkout repo
-      # ------------------------------------------
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      # ------------------------------------------
-      # 4. Fetch Figma metadata
-      # ------------------------------------------
-      - name: Fetch Figma metadata
+      - name: Fetch Figma file metadata
         id: figma
         run: |
-          FILE_ID=$(echo "${{ steps.extract.outputs.figma_url }}" \
-            | grep -oP '(?<=design/|file/)[^/]+')
-
+          FILE_ID=$(echo "${{ steps.extract.outputs.figma_url }}" | grep -oP '(?<=design/|file/)[^/]+')
           curl -H "X-Figma-Token: $FIGMA_TOKEN" \
                "https://api.figma.com/v1/files/$FILE_ID" \
                -o figma-data.json
-
           echo "figma_file_id=$FILE_ID" >> $GITHUB_OUTPUT
 
-      # ------------------------------------------
-      # 5. Generate Modal (Anthropic)
-      # ------------------------------------------
+      - name: Create workspace payload
+        id: payload
+        run: |
+          cat <<EOF > workspace-payload.json
+          {
+            "issueKey": "${{ steps.extract.outputs.issue_key }}",
+            "summary": "${{ steps.extract.outputs.summary }}",
+            "description": "${{ steps.extract.outputs.description }}",
+            "figmaFileId": "${{ steps.figma.outputs.figma_file_id }}",
+            "figmaMetadata": $(jq -c . < figma-data.json)
+          }
+          EOF
+
       - name: Generate modal via Anthropic
-        id: modal
+        env:
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
         run: |
           DESCRIPTION="${{ steps.extract.outputs.description }}"
           FIGMA_URL="${{ steps.extract.outputs.figma_url }}"
@@ -90,58 +87,48 @@ jobs:
             "temperature": 0.2,
             "messages": [{
               "role": "user",
-              "content": "Write a React TypeScript modal component based on this Jira description:\n\n${DESCRIPTION}\n\nFigma link: ${FIGMA_URL}\n\nMetadata:\n${FIGMA_METADATA}\n"
+              "content": "Write a React TypeScript modal component for the following Jira description:\n${DESCRIPTION}\nFigma link: ${FIGMA_URL}\n"
             }]
           }
           EOF
           )
-
-          # Save modal to file
+          
           echo "$RESPONSE" | jq -r '.content[0].text' > src/components/GeneratedModal.tsx
 
-      # ------------------------------------------
-      # 6. Create feature branch + commit + push
-      # ------------------------------------------
-      - name: Commit generated modal & push branch
-        id: create_pr
+      - name: Create feature branch & PR
         run: |
+          # Set variables from previous step outputs
           ISSUE_KEY="${{ steps.extract.outputs.issue_key }}"
           SUMMARY="${{ steps.extract.outputs.summary }}"
-          TS=$(date +%Y%m%d%H%M%S)
-          BRANCH="feat/${ISSUE_KEY}-${TS}"
+          TIMESTAMP=$(date +%Y%m%d%H%M%S)
 
+          BRANCH="feat/${ISSUE_KEY}-${TIMESTAMP}"
+
+          echo "Creating branch: $BRANCH"
+
+          # Configure Git author (required on GitHub Actions runner)
           git config --global user.name "github-actions[bot]"
           git config --global user.email "github-actions[bot]@users.noreply.github.com"
 
+          # Create new branch
           git checkout -b "$BRANCH"
 
-          git add src/components/GeneratedModal.tsx
-          git commit -m "feat($ISSUE_KEY): Add auto-generated modal component"
+          # Add all generated/copilot files
+          git add .
+
+          # Commit with proper message
+          git commit -m "feat($ISSUE_KEY): generated feature from Copilot"
+
+          # Push branch
           git push --set-upstream origin "$BRANCH"
 
-          # Create PR and return URL
-          PR_URL=$(gh pr create \
+          # Open PR via GitHub CLI
+          gh pr create \
             --title "Feature $ISSUE_KEY: $SUMMARY" \
-            --body "Auto-generated component for Jira issue $ISSUE_KEY" \
-            --base main)
+            --body "Auto-generated scaffold from Copilot for Jira issue $ISSUE_KEY" \
+            --base main
 
-          echo "pr_url=$PR_URL" >> $GITHUB_OUTPUT
 
-      # ------------------------------------------
-      # 7. Ask GitHub Copilot to review the PR
-      # ------------------------------------------
-      - name: Request Copilot code review
-        uses: actions/github-script@v7
-        with:
-          script: |
-            const prUrl = "${{ steps.create_pr.outputs.pr_url }}";
-            const prNumber = prUrl.split("/").pop();
 
-            console.log("Requesting GitHub Copilot review for PR:", prNumber);
 
-            await github.rest.pulls.requestReviewers({
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              pull_number: prNumber,
-              reviewers: ["github-copilot"]
-            });
+            
