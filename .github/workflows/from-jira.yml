@@ -82,7 +82,7 @@ jobs:
             "temperature": 0.2,
             "messages": [{
               "role": "user",
-              "content": "Write a React TypeScript modal component for the following Jira description:\n${DESCRIPTION}\nFigma link: ${FIGMA_URL}\n and the metadata Figma file metadata JSON:\n${FIGMA_METADATA}"
+              "content": "Write a React TypeScript modal component for the following Jira description:\n${DESCRIPTION}\nFigma link: ${FIGMA_URL}\n"
             }]
           }
           EOF
