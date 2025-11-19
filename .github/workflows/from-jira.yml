@@ -129,6 +129,20 @@ jobs:
             --base main
 
 
+      - name: Request Copilot code review
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const prUrl = "${{ steps.create_pr.outputs.pr_url }}";
+            const prNumber = prUrl.split("/").pop();
 
+            console.log("Requesting GitHub Copilot review for PR:", prNumber);
+
+            await github.rest.pulls.requestReviewers({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              pull_number: prNumber,
+              reviewers: ["github-copilot"]
+            });
 
             
