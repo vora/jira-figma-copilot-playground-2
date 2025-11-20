@@ -69,7 +69,7 @@ jobs:
             "summary": "${{ steps.extract.outputs.summary }}",
             "description": "${{ steps.extract.outputs.description }}",
             "figmaFileId": "${{ steps.figma.outputs.figma_file_id }}",
-            "figmaMetadata": $(jq -c . figma-clean.json)
+            "figmaMetadata": $(jq -c . FIGMA_METADATA)
           }
           EOF
 
