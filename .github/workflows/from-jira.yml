@@ -92,12 +92,12 @@ jobs:
             }' > anthropic-request.json
     
 
-        curl https://api.anthropic.com/v1/messages \
-        -H "Content-Type: application/json" \
-        -H "x-api-key: $ANTHROPIC_API_KEY" \
-        -H "anthropic-version: 2023-06-01" \
-        -d @anthropic-request.json \
-        | jq -r '.content[0].text' > src/components/GeneratedModal.tsx
+          curl https://api.anthropic.com/v1/messages \
+          -H "Content-Type: application/json" \
+          -H "x-api-key: $ANTHROPIC_API_KEY" \
+          -H "anthropic-version: 2023-06-01" \
+          -d @anthropic-request.json \
+          | jq -r '.content[0].text' > src/components/GeneratedModal.tsx
 
      
 
