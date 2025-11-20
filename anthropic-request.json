@@ -1,0 +1,39 @@
+{
+  "model": "claude-sonnet-4-20250514",
+  "max_tokens": 4096,
+  "temperature": 0.2,
+  "messages": [{
+    "role": "user",
+    "content": "Write a React TypeScript modal component for the following Jira description:\nCreate a reusable confirmation modal component that aligns with the new design system. The modal will be used across the application for actions such as deleting items, publishing content, and confirming navigation.
+
+The modal must follow the layout, spacing, typography, and interaction states defined in the Figma design.
+
+*Figma Reference*
+
+[https://www.figma.com/design/049DL3s5yK6CdYuNygmHeX/Broker-App-White-Label?node-id=1748-1740&m=dev|https://www.figma.com/design/049DL3s5yK6CdYuNygmHeX/Broker-App-White-Label?node-id=1748-1740&m=dev|smart-link] 
+*Requirements*
+
+# Frame should be rendered as a Modal which opens when triggered by a parent component via state.
+# Supports a news title, message body frame , and configurable primary button.
+# Modal must trap focus until closed.
+# Should be accessible (ARIA labels, roles, keyboard navigation).
+# Should be implemented with the existing UI primitives.
+# Include simple enter/exit animations.
+
+*Acceptance Criteria*
+
+* User triggers an action and the modal appears overlaying the page.
+* Modal displays title and message from passed props.
+* Buttons trigger callback functions provided by the parent.
+* Focus is correctly trapped inside the modal until it closes.
+* ESC key closes the modal.
+* Modal matches Figma design at the link above.
+* All unit tests pass.
+
+*Technical Notes*
+
+* Use existing dialog component if available; otherwise create base layer.
+* Ensure responsive behavior on mobile.
+* Use latest version of tailwind\n\nFigma link: https://www.figma.com/design/049DL3s5yK6CdYuNygmHeX/Broker-App-White-Label?node-id=7328-3875&m=dev"
+  }]
+}
