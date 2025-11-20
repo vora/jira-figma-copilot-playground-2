@@ -79,9 +79,48 @@ jobs:
         run: |
           DESCRIPTION="${{ steps.extract.outputs.description }}"
           FIGMA_URL="${{ steps.extract.outputs.figma_url }}"
-          FIGMA_METADATA=$(jq -c . < figma-metadata.json)
-          echo "FIGMA_METADATA: $FIGMA_METADATA"
+                }
+          EOF
 
+      - name: Generate modal via Anthropic
+        env:
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+        run: |
+          DESCRIPTION="${{ steps.extract.outputs.description }}"
+          FIGMA_URL="${{ steps.extract.outputs.figma_url }}"
+          jq '{
+            id: .nodes[].document.id,
+            name: .nodes[].document.name,
+            type: .nodes[].document.type,
+            layout: {
+              width: .nodes[].document.absoluteBoundingBox.width,
+              height: .nodes[].document.absoluteBoundingBox.height
+            },
+            children: [.nodes[].document.children[].name]
+          }' figma-metadata.json > figma-clean.json
+
+          FIGMA_METADATA=$(jq -c . figma-clean.json | jq -R -s @json)
+          echo "Clean Figma Metadata (escaped): $FIGMA_METADATA"
+
+
+          RESPONSE=$(curl https://api.anthropic.com/v1/messages \
+            -H "Content-Type: application/json" \
+            -H "x-api-key: $ANTHROPIC_API_KEY" \
+            -H "anthropic-version: 2023-06-01" \
+            -d @- <<EOF
+          {
+            "model": "claude-sonnet-4-20250514",
+            "max_tokens": 4096,
+            "temperature": 0.2,
+            "messages": [{
+              "role": "user",
+              "content": "Write a React TypeScript modal component for the following Jira description:\n${DESCRIPTION}\n\nFigma link: ${FIGMA_URL}\n\nFigma metadata: ${FIGMA_METADATA}"
+            }]
+          }
+          EOF
+          )
+          
+          
 
           RESPONSE=$(curl https://api.anthropic.com/v1/messages \
             -H "Content-Type: application/json" \
