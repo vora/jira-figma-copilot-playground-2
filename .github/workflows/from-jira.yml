@@ -75,6 +75,7 @@ jobs:
           DESCRIPTION="${{ steps.extract.outputs.description }}"
           FIGMA_URL="${{ steps.extract.outputs.figma_url }}"
           FIGMA_METADATA=$(jq -c . < figma-data.json)
+          echo FIGMA_METADATA >> $GITHUB_OUTPUT
 
           RESPONSE=$(curl https://api.anthropic.com/v1/messages \
             -H "Content-Type: application/json" \
