@@ -54,10 +54,11 @@ jobs:
           echo "FILE_ID=$FILE_ID"
           echo "NODE_ID=$NODE_ID"
           curl -H "X-Figma-Token: $FIGMA_TOKEN" \
-               "https://api.figma.com/v1/files/$FILE_ID/nodes?id=$NODE_ID" \
+               "https://api.figma.com/v1/files/$FILE_ID/nodes?ids=$NODE_ID" \
                -o figma-data.json
-          FIGMA_METADATA=$(jq -c . < figma-metadata.json)
 
+          FIGMA_METADATA=$(jq -c . < figma-metadata.json)
+          echo "figma_metadata=$FIGMA_METADATA" >> $GITHUB_OUTPUT
 
       - name: Create workspace payload
         id: payload
