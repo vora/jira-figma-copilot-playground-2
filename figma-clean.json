@@ -1,0 +1,35 @@
+{
+  "id": "7328:3875",
+  "name": "News Title",
+  "type": "FRAME",
+  "layout": {
+    "width": 256.0,
+    "height": 186.0
+  },
+  "children": [
+    {
+      "id": "7328:3876",
+      "name": "Frame 131",
+      "type": "FRAME",
+      "layout": {
+        "x": 4752.0,
+        "y": 3041.0,
+        "width": 224.0,
+        "height": 96.0
+      },
+      "style": null
+    },
+    {
+      "id": "7328:3890",
+      "name": "Button Default",
+      "type": "INSTANCE",
+      "layout": {
+        "x": 4752.0,
+        "y": 3155.0,
+        "width": 79.0,
+        "height": 40.0
+      },
+      "style": null
+    }
+  ]
+}
