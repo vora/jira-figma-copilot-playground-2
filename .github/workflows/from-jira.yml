@@ -77,20 +77,19 @@ jobs:
         env:
           ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
         run: |
-          # Build the full message with jq to ensure proper JSON escaping
-        jq -n \
-          --arg desc "${{ steps.extract.outputs.description }}" \
-          --arg url "${{ steps.extract.outputs.figma_url }}" \
-          --slurpfile figma figma-clean.json \
-          '{
-            model: "claude-sonnet-4-20250514",
-            max_tokens: 4096,
-            temperature: 0.2,
-            messages: [{
-              role: "user",
-              content: "Write a React TypeScript modal component for:\n\nJira Description:\n\($desc)\n\nFigma Link: \($url)\n\nFigma Metadata:\n```json\n\($figma[0] | tostring)\n```\n\nCreate a production-ready component matching this design."
-            }]
-          }' > anthropic-request.json
+          jq -n \
+            --arg desc "${{ steps.extract.outputs.description }}" \
+            --arg url "${{ steps.extract.outputs.figma_url }}" \
+            --slurpfile figma figma-clean.json \
+            '{
+              model: "claude-sonnet-4-20250514",
+              max_tokens: 4096,
+              temperature: 0.2,
+              messages: [{
+                role: "user",
+                content: "Write a React TypeScript modal component for:\n\nJira Description:\n\($desc)\n\nFigma Link: \($url)\n\nFigma Metadata:\n```json\n\($figma[0] | tostring)\n```\n\nCreate a production-ready component matching this design."
+              }]
+            }' > anthropic-request.json
     
     # Send request
       curl https://api.anthropic.com/v1/messages \
