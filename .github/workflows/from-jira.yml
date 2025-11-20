@@ -50,10 +50,14 @@ jobs:
         id: figma
         run: |
           FILE_ID=$(echo "${{ steps.extract.outputs.figma_url }}" | grep -oP '(?<=design/|file/)[^/]+')
+          NODE_ID=$(echo "${{ steps.extract.outputs.figma_url }}" | grep -oP '(?<=node-id=)[0-9:-]+')
+          echo "FILE_ID=$FILE_ID"
+          echo "NODE_ID=$NODE_ID"
           curl -H "X-Figma-Token: $FIGMA_TOKEN" \
-               "https://api.figma.com/v1/files/$FILE_ID" \
+               "https://api.figma.com/v1/files/$FILE_ID/nodes?id=$NODE_ID" \
                -o figma-data.json
-          echo "figma_file_id=$FILE_ID" >> $GITHUB_OUTPUT
+          FIGMA_METADATA=$(jq -c . < figma-metadata.json)
+
 
       - name: Create workspace payload
         id: payload
