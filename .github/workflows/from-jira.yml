@@ -89,7 +89,7 @@ jobs:
             "temperature": 0.2,
             "messages": [{
               "role": "user",
-              "content": "Write a React TypeScript modal component for the following Jira description:\n${DESCRIPTION}\nFigma link: ${FIGMA_URL}\n"
+              "content": "Write a React TypeScript modal component for the following Jira description:\n${DESCRIPTION}\nFigma link: ${FIGMA_URL}\n Figma metadata: ${FIGMA_METADATA}"
             }]
           }
           EOF
@@ -136,11 +136,3 @@ jobs:
           echo "pr_number=$PR_NUMBER" >> "$GITHUB_OUTPUT"
           echo "PR Number: $PR_NUMBER"
 
-
-          
-    
-    
-          
-
-
-            
