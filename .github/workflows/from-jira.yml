@@ -67,6 +67,12 @@ jobs:
               width: .nodes[].document.absoluteBoundingBox.width,
               height: .nodes[].document.absoluteBoundingBox.height
             },
+             colors: {
+              backgroundColor: .nodes[].document.backgroundColor?,
+              fills: (.nodes[].document.fills // [] | map(.color)),
+              strokes: (.nodes[].document.strokes // [] | map(.color))
+
+            },
             children: (.nodes[].document.children // [] | map({
               id: .id,
               name: .name,
