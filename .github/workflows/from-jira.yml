@@ -17,14 +17,16 @@ jobs:
       JIRA_WEBHOOK_SECRET: ${{ secrets.JIRA_WEBHOOK_SECRET }}
       FIGMA_TOKEN: ${{ secrets.FIGMA_TOKEN }}
       GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
     steps:
+
       - name: Validate incoming webhook signature
-        # (You should implement verification of JIRA_WEBHOOK_SECRET if desired)
         run: |
           echo "Webhook payload: $GITHUB_EVENT_PATH"
           cat "$GITHUB_EVENT_PATH"
+          # Optional: implement verification with JIRA_WEBHOOK_SECRET
 
-      - name: Extract issue and figma data
+      - name: Extract issue and Figma data
         id: extract
         run: |
           ISSUE_KEY=$(jq -r .client_payload.issueKey < "$GITHUB_EVENT_PATH")
@@ -46,19 +48,39 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Fetch Figma file metadata
+      - name: Fetch and clean Figma file metadata
         id: figma
         run: |
           FILE_ID=$(echo "${{ steps.extract.outputs.figma_url }}" | grep -oP '(?<=design/|file/)[^/]+')
           NODE_ID=$(echo "${{ steps.extract.outputs.figma_url }}" | grep -oP '(?<=node-id=)[0-9:-]+')
-          echo "FILE_ID=$FILE_ID"
-          echo "NODE_ID=$NODE_ID"
-          curl -H "X-Figma-Token: $FIGMA_TOKEN" \
-               "https://api.figma.com/v1/files/$FILE_ID/nodes?ids=$NODE_ID" \
-               -o figma-metadata.json
+          
+          curl -s -H "X-Figma-Token: $FIGMA_TOKEN" \
+            "https://api.figma.com/v1/files/$FILE_ID/nodes?ids=$NODE_ID" \
+            -o figma-metadata.json
 
-          FIGMA_METADATA=$(jq -c . < figma-metadata.json)
-          echo "figma_metadata=$FIGMA_METADATA" >> $GITHUB_OUTPUT
+          # Clean metadata to a simplified structure
+          jq '{
+            id: .nodes[].document.id,
+            name: .nodes[].document.name,
+            type: .nodes[].document.type,
+            layout: {
+              width: .nodes[].document.absoluteBoundingBox.width,
+              height: .nodes[].document.absoluteBoundingBox.height
+            },
+            children: (.nodes[].document.children // [] | map({
+              id: .id,
+              name: .name,
+              type: .type,
+              layout: .absoluteBoundingBox,
+              style: .style?
+            }))
+          }' figma-metadata.json > figma-clean.json
+
+          # Set outputs
+          echo "figma_metadata<<EOF" >> $GITHUB_OUTPUT
+          cat figma-clean.json >> $GITHUB_OUTPUT
+          echo "EOF" >> $GITHUB_OUTPUT
+          echo "figma_file_id=$FILE_ID" >> $GITHUB_OUTPUT
 
       - name: Create workspace payload
         id: payload
@@ -69,11 +91,9 @@ jobs:
             "summary": "${{ steps.extract.outputs.summary }}",
             "description": "${{ steps.extract.outputs.description }}",
             "figmaFileId": "${{ steps.figma.outputs.figma_file_id }}",
-            "figmaMetadata": $(jq -c . FIGMA_METADATA)
+            "figmaMetadata": ${{ steps.figma.outputs.figma_metadata }}
           }
           EOF
-
-     
 
       - name: Generate modal via Anthropic
         env:
@@ -81,24 +101,7 @@ jobs:
         run: |
           DESCRIPTION="${{ steps.extract.outputs.description }}"
           FIGMA_URL="${{ steps.extract.outputs.figma_url }}"
-          jq '{
-            id: .nodes[].document.id,
-            name: .nodes[].document.name,
-            type: .nodes[].document.type,
-            layout: {
-              width: .nodes[].document.absoluteBoundingBox.width,
-              height: .nodes[].document.absoluteBoundingBox.height
-            },
-              children: (.nodes[].document.children // [] | map({
-              id: .id,
-              name: .name,
-              type: .type,
-              layout: .absoluteBoundingBox,
-              style: .style?
-            }))
-          }' figma-metadata.json > figma-clean.json
 
-          FIGMA_METADATA=$(cat figma-clean.json)
           cat > anthropic-request.json <<EOF
           {
             "model": "claude-sonnet-4-20250514",
@@ -106,60 +109,39 @@ jobs:
             "temperature": 0.2,
             "messages": [{
               "role": "user",
-              "content": "Write a React TypeScript modal component for the following Jira description:\n${DESCRIPTION}\n\nFigma link: ${FIGMA_URL}\n\"
+              "content": "Write a React TypeScript modal component for the following Jira description:\n${DESCRIPTION}\n\nFigma link: ${FIGMA_URL}"
             }]
-          } 
+          }
           EOF
-    
 
-
-          
           RESPONSE=$(curl https://api.anthropic.com/v1/messages \
-          -H "Content-Type: application/json" \
-          -H "x-api-key: $ANTHROPIC_API_KEY" \
-          -H "anthropic-version: 2023-06-01" \
-          -d @anthropic-request.json)
-    
+            -H "Content-Type: application/json" \
+            -H "x-api-key: $ANTHROPIC_API_KEY" \
+            -H "anthropic-version: 2023-06-01" \
+            -d @anthropic-request.json)
+
           echo "$RESPONSE" | jq -r '.content[0].text' > src/components/GeneratedModal.tsx
-      
-          
 
       - name: Create feature branch & PR
-        id: prextract
         run: |
-          # Set variables from previous step outputs
           ISSUE_KEY="${{ steps.extract.outputs.issue_key }}"
           SUMMARY="${{ steps.extract.outputs.summary }}"
           TIMESTAMP=$(date +%Y%m%d%H%M%S)
-
           BRANCH="feat/${ISSUE_KEY}-${TIMESTAMP}"
 
-          echo "Creating branch: $BRANCH"
-
-          # Configure Git author (required on GitHub Actions runner)
           git config --global user.name "github-actions[bot]"
           git config --global user.email "github-actions[bot]@users.noreply.github.com"
 
-          # Create new branch
           git checkout -b "$BRANCH"
-
-          # Add all generated/copilot files
           git add .
-
-          # Commit with proper message
           git commit -m "feat($ISSUE_KEY): generated feature from Copilot"
-
-          # Push branch
           git push --set-upstream origin "$BRANCH"
 
-          # Open PR via GitHub CLI
           PR_URL=$(gh pr create \
             --title "Feature $ISSUE_KEY: $SUMMARY" \
             --body "Auto-generated scaffold from Copilot for Jira issue $ISSUE_KEY" \
             --base main)
 
           PR_NUMBER=$(gh pr view "$BRANCH" --json number --jq '.number')
-
           echo "pr_number=$PR_NUMBER" >> "$GITHUB_OUTPUT"
           echo "PR Number: $PR_NUMBER"
-
