@@ -113,24 +113,14 @@ jobs:
     
 
 
+          
           RESPONSE=$(curl https://api.anthropic.com/v1/messages \
-            -H "Content-Type: application/json" \
-            -H "x-api-key: $ANTHROPIC_API_KEY" \
-            -H "anthropic-version: 2023-06-01" \
-            -d @- <<EOF
-          {
-            "model": "claude-sonnet-4-20250514",
-            "max_tokens": 4096,
-            "temperature": 0.2,
-            "messages": [{
-              "role": "user",
-              "content": "Write a React TypeScript modal component for the following Jira description:\n${DESCRIPTION}\n\nFigma link: ${FIGMA_URL}\n\nFigma metadata:\n\`\`\`json\n${FIGMA_METADATA}\n\`\`\`\n\nCreate a complete, production-ready modal component using this structure and styling information."
-            }]
-          }
-          EOF
-          )
-          
-          
+          -H "Content-Type: application/json" \
+          -H "x-api-key: $ANTHROPIC_API_KEY" \
+          -H "anthropic-version: 2023-06-01" \
+          -d @anthropic-request.json)
+    
+          echo "$RESPONSE" | jq -r '.content[0].text' > src/components/GeneratedModal.tsx
       
           
 
