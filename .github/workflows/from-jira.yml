@@ -78,6 +78,8 @@ jobs:
               name: .name,
               type: .type,
               layout: .absoluteBoundingBox,
+              fills: (.fills // [] | map(.color)),
+              strokes: (.strokes // [] | map(.color)),              
               style: .style?
             }))
           }' figma-metadata.json > figma-clean.json
