@@ -1,0 +1,99 @@
+{
+  "issueKey": "PLAYG-1",
+  "summary": "Implement new title frame Component",
+  "description": "Create a reusable confirmation modal component that aligns with the new design system. The modal will be used across the application for actions such as deleting items, publishing content, and confirming navigation.
+
+The modal must follow the layout, spacing, typography, and interaction states defined in the Figma design.
+
+*Figma Reference*
+
+[https://www.figma.com/design/049DL3s5yK6CdYuNygmHeX/Broker-App-White-Label?node-id=1748-1740&m=dev|https://www.figma.com/design/049DL3s5yK6CdYuNygmHeX/Broker-App-White-Label?node-id=1748-1740&m=dev|smart-link] 
+*Requirements*
+
+# Frame should be rendered as a Modal which opens when triggered by a parent component via state.
+# Supports a news title, message body frame , and configurable primary button.
+# Modal must trap focus until closed.
+# Should be accessible (ARIA labels, roles, keyboard navigation).
+# Should be implemented with the existing UI primitives.
+# Include simple enter/exit animations.
+
+*Acceptance Criteria*
+
+* User triggers an action and the modal appears overlaying the page.
+* Modal displays title and message from passed props.
+* Buttons trigger callback functions provided by the parent.
+* Focus is correctly trapped inside the modal until it closes.
+* ESC key closes the modal.
+* Modal matches Figma design at the link above.
+* All unit tests pass.
+
+*Technical Notes*
+
+* Use existing dialog component if available; otherwise create base layer.
+* Ensure responsive behavior on mobile.
+* Use latest version of tailwind",
+  "figmaFileId": "049DL3s5yK6CdYuNygmHeX",
+  "figmaMetadata": {
+  "id": "7328:3875",
+  "name": "News Title",
+  "type": "FRAME",
+  "layout": {
+    "width": 256.0,
+    "height": 186.0
+  },
+  "colors": {
+    "backgroundColor": {
+      "r": 1.0,
+      "g": 1.0,
+      "b": 1.0,
+      "a": 1.0
+    },
+    "fills": [
+      {
+        "r": 1.0,
+        "g": 1.0,
+        "b": 1.0,
+        "a": 1.0
+      }
+    ],
+    "strokes": []
+  },
+  "children": [
+    {
+      "id": "7328:3876",
+      "name": "Frame 131",
+      "type": "FRAME",
+      "layout": {
+        "x": 4752.0,
+        "y": 3041.0,
+        "width": 224.0,
+        "height": 96.0
+      },
+      "fills": [],
+      "strokes": [],
+      "style": null
+    },
+    {
+      "id": "7328:3890",
+      "name": "Button Default",
+      "type": "INSTANCE",
+      "layout": {
+        "x": 4752.0,
+        "y": 3155.0,
+        "width": 79.0,
+        "height": 40.0
+      },
+      "fills": [
+        {
+          "r": 0.35294118523597717,
+          "g": 0.35686275362968445,
+          "b": 0.41568627953529358,
+          "a": 1.0
+        }
+      ],
+      "strokes": [],
+      "style": null
+    }
+  ]
+}
+}
