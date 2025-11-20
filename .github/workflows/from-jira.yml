@@ -69,7 +69,7 @@ jobs:
             "summary": "${{ steps.extract.outputs.summary }}",
             "description": "${{ steps.extract.outputs.description }}",
             "figmaFileId": "${{ steps.figma.outputs.figma_file_id }}",
-            "figmaMetadata": $(jq -c . < figma-metadata.json)
+            "figmaMetadata": $(jq -c . figma-clean.json)
           }
           EOF
 
@@ -89,7 +89,13 @@ jobs:
               width: .nodes[].document.absoluteBoundingBox.width,
               height: .nodes[].document.absoluteBoundingBox.height
             },
-            children: [.nodes[].document.children[].name]
+              children: (.nodes[].document.children // [] | map({
+              id: .id,
+              name: .name,
+              type: .type,
+              layout: .absoluteBoundingBox,
+              style: .style?
+            }))
           }' figma-metadata.json > figma-clean.json
 
           FIGMA_METADATA=$(jq -c . figma-clean.json | jq -R -s @json)
@@ -113,24 +119,7 @@ jobs:
           EOF
           )
           
-          
-
-          RESPONSE=$(curl https://api.anthropic.com/v1/messages \
-            -H "Content-Type: application/json" \
-            -H "x-api-key: $ANTHROPIC_API_KEY" \
-            -H "anthropic-version: 2023-06-01" \
-            -d @- <<EOF
-          {
-            "model": "claude-sonnet-4-20250514",
-            "max_tokens": 4096,
-            "temperature": 0.2,
-            "messages": [{
-              "role": "user",
-              "content": "Write a React TypeScript modal component for the following Jira description:\n${DESCRIPTION}\nFigma link: ${FIGMA_URL}\n Figma metadata: ${FIGMA_METADATA}"
-            }]
-          }
-          EOF
-          )
+      
           
           echo "$RESPONSE" | jq -r '.content[0].text' > src/components/GeneratedModal.tsx
 
