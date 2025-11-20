@@ -69,7 +69,7 @@ jobs:
             "summary": "${{ steps.extract.outputs.summary }}",
             "description": "${{ steps.extract.outputs.description }}",
             "figmaFileId": "${{ steps.figma.outputs.figma_file_id }}",
-            "figmaMetadata": $(jq -c . < figma-data.json)
+            "figmaMetadata": $(jq -c . < figma-metadata.json)
           }
           EOF
 
@@ -79,7 +79,7 @@ jobs:
         run: |
           DESCRIPTION="${{ steps.extract.outputs.description }}"
           FIGMA_URL="${{ steps.extract.outputs.figma_url }}"
-          FIGMA_METADATA=$(jq -c . < figma-data.json)
+          FIGMA_METADATA=$(jq -c . < figma-metadata.json)
           echo "FIGMA_METADATA: $FIGMA_METADATA"
 
 
