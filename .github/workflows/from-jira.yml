@@ -51,8 +51,8 @@ jobs:
       - name: Fetch and clean Figma file metadata
         id: figma
         run: |
-          FILE_ID=$(echo "${{ steps.extract.outputs.figma_url }}" | sed -E 's#.*(design|file)/([^/]+).*#\2#')
-          NODE_ID=$(echo "${{ steps.extract.outputs.figma_url }}" | sed -E 's/.*node-id=([0-9:-]+).*/\1/')
+          FILE_ID=$(echo "${{ steps.extract.outputs.figma_url }}" | grep -oP '(?<=design/|file/)[^/]+')
+          NODE_ID=$(echo "${{ steps.extract.outputs.figma_url }}" | grep -oP '(?<=node-id=)[0-9:-]+')
           
           IMAGERESPONSE=$(curl -s -H "X-Figma-Token: $FIGMA_TOKEN" \
             "https://api.figma.com/v1/images/$FILE_ID/nodes?ids=$NODE_ID")
