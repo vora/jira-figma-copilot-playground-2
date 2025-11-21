@@ -51,22 +51,40 @@ jobs:
       - name: Fetch and clean Figma file metadata
         id: figma
         run: |
-          FILE_ID=$(echo "${{ steps.extract.outputs.figma_url }}" | grep -oP '(?<=design/|file/)[^/]+')
-          NODE_ID=$(echo "${{ steps.extract.outputs.figma_url }}" | grep -oP '(?<=node-id=)[0-9:-]+')
-          
+          FIGMA_URL="${{ steps.extract.outputs.figma_url }}"
+    
+          FILE_ID=$(echo "$FIGMA_URL" | sed -n 's|.*figma.com/\(design\|file\)/\([^/]*\).*|\2|p')
+    
+          NODE_ID=$(echo "$FIGMA_URL" | grep -oP '(?<=node-id=)[0-9:-]+' || echo "")
+    
+          echo "FILE_ID: $FILE_ID"
+          echo "NODE_ID: $NODE_ID"
+    
+          if [ -z "$FILE_ID" ]; then
+            echo "Error: Could not extract FILE_ID from URL"
+            exit 1
+          fi
+    
+          if [ -z "$NODE_ID" ]; then
+            echo "Error: Could not extract NODE_ID from URL"
+            exit 1
+          fi
+    
           IMAGERESPONSE=$(curl -s -H "X-Figma-Token: $FIGMA_TOKEN" \
-            "https://api.figma.com/v1/images/$FILE_ID/nodes?ids=$NODE_ID")
-
+            "https://api.figma.com/v1/images/$FILE_ID?ids=$NODE_ID")
+    
           IMAGE_URL=$(echo "$IMAGERESPONSE" | jq -r ".images[\"$NODE_ID\"]")
-
-          curl -s "$IMAGE_URL" -o node.png
-
-
+    
+          if [ "$IMAGE_URL" != "null" ] && [ -n "$IMAGE_URL" ]; then
+            curl -s "$IMAGE_URL" -o node.png
+          else
+            echo "Warning: Could not fetch image URL"
+          fi
+    
           curl -s -H "X-Figma-Token: $FIGMA_TOKEN" \
             "https://api.figma.com/v1/files/$FILE_ID/nodes?ids=$NODE_ID" \
             -o figma-metadata.json
-
-          # Clean metadata to a simplified structure
+    
           jq '{
             id: .nodes[].document.id,
             name: .nodes[].document.name,
@@ -75,21 +93,20 @@ jobs:
               width: .nodes[].document.absoluteBoundingBox.width,
               height: .nodes[].document.absoluteBoundingBox.height
             },
-             colors: {
+            colors: {
               backgroundColor: .nodes[].document.backgroundColor?,
               fills: (.nodes[].document.fills // [] | map(.color)),
               strokes: (.nodes[].document.strokes // [] | map(.color))
-
             },
-            children: (.nodes[].document.children // [] | map({
-              id: .id,
-              name: .name,
-              type: .type,
-              layout: .absoluteBoundingBox,
-              fills: (.fills // [] | map(.color)),
-              strokes: (.strokes // [] | map(.color)),              
-              style: .style?
-            }))
+          children: (.nodes[].document.children // [] | map({
+            id: .id,
+          name: .name,
+          type: .type,
+          layout: .absoluteBoundingBox,
+          fills: (.fills // [] | map(.color)),
+          strokes: (.strokes // [] | map(.color)),
+          style: .style?
+          }))
           }' figma-metadata.json > figma-clean.json
 
           # Set outputs
