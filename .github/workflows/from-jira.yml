@@ -71,7 +71,8 @@ jobs:
           fi
     
           IMAGERESPONSE=$(curl -s -H "X-Figma-Token: $FIGMA_TOKEN" \
-            "https://api.figma.com/v1/images/$FILE_ID?ids=$NODE_ID")
+              "https://api.figma.com/v1/images/$FILE_ID?ids=$NODE_ID&format=png&scale=2")
+
     
           IMAGE_URL=$(echo "$IMAGERESPONSE" | jq -r ".images[\"$NODE_ID\"]")
     
