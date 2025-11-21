@@ -54,6 +54,14 @@ jobs:
           FILE_ID=$(echo "${{ steps.extract.outputs.figma_url }}" | grep -oP '(?<=design/|file/)[^/]+')
           NODE_ID=$(echo "${{ steps.extract.outputs.figma_url }}" | grep -oP '(?<=node-id=)[0-9:-]+')
           
+          IMAGERESPONSE=$(curl -s -H "X-Figma-Token: $FIGMA_TOKEN" \
+            "https://api.figma.com/v1/images/$FILE_ID/nodes?ids=$NODE_ID")
+
+          IMAGE_URL=$(echo "$IMAGERESPONSE" | jq -r ".images[\"$NODE_ID\"]")
+
+          curl -s "$IMAGE_URL" -o node.png
+
+
           curl -s -H "X-Figma-Token: $FIGMA_TOKEN" \
             "https://api.figma.com/v1/files/$FILE_ID/nodes?ids=$NODE_ID" \
             -o figma-metadata.json
@@ -105,6 +113,12 @@ jobs:
           }
           EOF
 
+      - name: Encode image to base64
+        id: encode_img
+        run: |
+          BASE64_IMAGE=$(base64 -w 0 node.png)
+          echo "base64_image=$BASE64_IMAGE" >> $GITHUB_OUTPUT
+
       - name: Generate modal via Anthropic
         env:
           ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
@@ -119,7 +133,20 @@ jobs:
             "temperature": 0.2,
             "messages": [{
               "role": "user",
-              "content": "Write a React TypeScript modal component for the following Jira description:\n${DESCRIPTION}\n\nFigma link: ${FIGMA_URL}\n\nFigma metadata: ${FIGMA_METADATA}"
+              "content": [
+                {
+                  "type": "text", 
+                  "text": "Write a React TypeScript modal component for the following Jira description:\n${DESCRIPTION}\n\nFigma link: ${FIGMA_URL}\n\nFigma metadata: ${FIGMA_METADATA}"
+                },
+                {
+                  "type": "image",
+                  "source": {
+                    "type": "base64",
+                    "media_type": "image/png",
+                    "data": "${BASE64_IMAGE}"
+                  }
+                }
+              ]
             }]
           }
           EOF
@@ -155,3 +182,7 @@ jobs:
           PR_NUMBER=$(gh pr view "$BRANCH" --json number --jq '.number')
           echo "pr_number=$PR_NUMBER" >> "$GITHUB_OUTPUT"
           echo "PR Number: $PR_NUMBER"
+
+
+
+https://www.figma.com/design/049DL3s5yK6CdYuNygmHeX/Broker-App-White-Label?node-id=7328-3875&m=dev
