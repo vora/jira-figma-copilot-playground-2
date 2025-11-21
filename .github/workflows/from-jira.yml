@@ -80,11 +80,20 @@ jobs:
 
           echo "IMAGE_URL: $IMAGE_URL"
 
-          # Download image ONLY if URL is valid
-          if [ "$IMAGE_URL" != "null" ] && [ -n "$IMAGE_URL" ]; then
-            curl -s "$IMAGE_URL" -o node.png
+          if [ "$IMAGE_URL" = "null" ] || [ -z "$IMAGE_URL" ]; then
+            echo "Primary render failed. Trying Figma thumbnail API..."
+
+          THUMB_RESPONSE=$(curl -s -H "X-Figma-Token: $FIGMA_TOKEN" \
+           "https://api.figma.com/v1/files/$FILE_ID/thumbs?ids=$NODE_ID")
+
+          THUMB_URL=$(echo "$THUMB_RESPONSE" | jq -r ".thumbnails[\"$NODE_ID\"]")
+
+          if [ "$THUMB_URL" != "null" ] && [ -n "$THUMB_URL" ]; then
+            echo "Using thumbnail fallback: $THUMB_URL"
+            curl -s "$THUMB_URL" -o node.png
           else
-            echo "Warning: No image available for this node (Figma returned null)"
+            echo "ERROR: No renderable image OR thumbnail available."
+            fi
           fi
 
           # Fetch raw node metadata
