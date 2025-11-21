@@ -24,7 +24,6 @@ jobs:
         run: |
           echo "Webhook payload: $GITHUB_EVENT_PATH"
           cat "$GITHUB_EVENT_PATH"
-          # Optional: implement verification with JIRA_WEBHOOK_SECRET
 
       - name: Extract issue and Figma data
         id: extract
@@ -35,6 +34,7 @@ jobs:
           FIGMA_URL=$(jq -r .client_payload.figma_link < "$GITHUB_EVENT_PATH")
 
           echo "issue_key=$ISSUE_KEY" >> $GITHUB_OUTPUT
+
           echo "summary<<EOF" >> $GITHUB_OUTPUT
           echo "$SUMMARY" >> $GITHUB_OUTPUT
           echo "EOF" >> $GITHUB_OUTPUT
@@ -48,74 +48,76 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Fetch and clean Figma file metadata
+      - name: Fetch Figma metadata + render image
         id: figma
         run: |
+          set -e
+
           FIGMA_URL="${{ steps.extract.outputs.figma_url }}"
-    
-          FILE_ID=$(echo "${{ steps.extract.outputs.figma_url }}" | sed -E 's#.*(design|file)/([^/]+).*#\2#')
-    
+
+          # Extract FILE_ID and NODE_ID
+          FILE_ID=$(echo "$FIGMA_URL" | sed -E 's#.*(design|file)/([^/]+).*#\2#')
           NODE_ID=$(echo "$FIGMA_URL" | grep -oP '(?<=node-id=)[0-9:-]+' || echo "")
-    
+
           echo "FILE_ID: $FILE_ID"
           echo "NODE_ID: $NODE_ID"
-    
-          if [ -z "$FILE_ID" ]; then
-            echo "Error: Could not extract FILE_ID from URL"
-            exit 1
-          fi
-    
-          if [ -z "$NODE_ID" ]; then
-            echo "Error: Could not extract NODE_ID from URL"
-            exit 1
-          fi
-    
-          IMAGERESPONSE=$(curl -s -H "X-Figma-Token: $FIGMA_TOKEN" \
-              "https://api.figma.com/v1/images/$FILE_ID?ids=$NODE_ID&format=png&scale=2")
 
-    
+          if [ -z "$FILE_ID" ]; then
+            echo "Error: Could not extract FILE_ID"
+            exit 1
+          fi
+
+          if [ -z "$NODE_ID" ]; then
+            echo "Error: Could not extract NODE_ID"
+            exit 1
+          fi
+
+          # Request image URL from Figma
+          IMAGERESPONSE=$(curl -s -H "X-Figma-Token: $FIGMA_TOKEN" \
+            "https://api.figma.com/v1/images/$FILE_ID?ids=$NODE_ID&format=png&scale=2")
+
           IMAGE_URL=$(echo "$IMAGERESPONSE" | jq -r ".images[\"$NODE_ID\"]")
-    
+
+          echo "IMAGE_URL: $IMAGE_URL"
+
+          # Download image ONLY if URL is valid
           if [ "$IMAGE_URL" != "null" ] && [ -n "$IMAGE_URL" ]; then
             curl -s "$IMAGE_URL" -o node.png
           else
-            echo "Warning: Could not fetch image URL"
+            echo "Warning: No image available for this node (Figma returned null)"
           fi
-    
+
+          # Fetch raw node metadata
           curl -s -H "X-Figma-Token: $FIGMA_TOKEN" \
             "https://api.figma.com/v1/files/$FILE_ID/nodes?ids=$NODE_ID" \
             -o figma-metadata.json
-    
+
+          # Clean metadata down to a structured format
           jq '{
             id: .nodes[].document.id,
             name: .nodes[].document.name,
             type: .nodes[].document.type,
-            layout: {
-              width: .nodes[].document.absoluteBoundingBox.width,
-              height: .nodes[].document.absoluteBoundingBox.height
-            },
+            layout: (.nodes[].document.absoluteBoundingBox // {}),
             colors: {
               backgroundColor: .nodes[].document.backgroundColor?,
               fills: (.nodes[].document.fills // [] | map(.color)),
               strokes: (.nodes[].document.strokes // [] | map(.color))
             },
-          children: (.nodes[].document.children // [] | map({
-            id: .id,
-          name: .name,
-          type: .type,
-          layout: .absoluteBoundingBox,
-          fills: (.fills // [] | map(.color)),
-          strokes: (.strokes // [] | map(.color)),
-          style: .style?
-          }))
+            children: (.nodes[].document.children // [] | map({
+              id: .id,
+              name: .name,
+              type: .type,
+              layout: .absoluteBoundingBox,
+              fills: (.fills // [] | map(.color)),
+              strokes: (.strokes // [] | map(.color)),
+              style: .style?
+            }))
           }' figma-metadata.json > figma-clean.json
 
-          # Set outputs
           echo "figma_metadata<<EOF" >> $GITHUB_OUTPUT
           cat figma-clean.json >> $GITHUB_OUTPUT
-          FIGMA_METADATA=$(cat figma-clean.json)
-
           echo "EOF" >> $GITHUB_OUTPUT
+
           echo "figma_file_id=$FILE_ID" >> $GITHUB_OUTPUT
 
       - name: Create workspace payload
@@ -131,10 +133,16 @@ jobs:
           }
           EOF
 
-      - name: Encode image to base64
+      - name: Encode image to base64 (if it exists)
         id: encode_img
         run: |
-          BASE64_IMAGE=$(base64 -w 0 node.png)
+          if [ -f node.png ]; then
+            BASE64_IMAGE=$(base64 -w 0 node.png)
+          else
+            BASE64_IMAGE=""
+            echo "No node.png to encode."
+          fi
+
           echo "base64_image=$BASE64_IMAGE" >> $GITHUB_OUTPUT
 
       - name: Generate modal via Anthropic
@@ -143,33 +151,34 @@ jobs:
         run: |
           DESCRIPTION="${{ steps.extract.outputs.description }}"
           FIGMA_URL="${{ steps.extract.outputs.figma_url }}"
+          FIGMA_METADATA='${{ steps.figma.outputs.figma_metadata }}'
+          BASE64_IMAGE="${{ steps.encode_img.outputs.base64_image }}"
 
           cat > anthropic-request.json <<EOF
           {
             "model": "claude-sonnet-4-20250514",
             "max_tokens": 4096,
             "temperature": 0.2,
-            "messages": [{
-              "role": "user",
-              "content": [
-                {
-                  "type": "text", 
-                  "text": "Write a React TypeScript modal component for the following Jira description:\n${DESCRIPTION}\n\nFigma link: ${FIGMA_URL}\n\nFigma metadata: ${FIGMA_METADATA}"
-                },
-                {
-                  "type": "image",
-                  "source": {
-                    "type": "base64",
-                    "media_type": "image/png",
-                    "data": "${BASE64_IMAGE}"
+            "messages": [
+              {
+                "role": "user",
+                "content": [
+                  { "type": "text", "text": "Write a React modal component for this Jira description:\n${DESCRIPTION}\n\nFigma link: ${FIGMA_URL}\n\nMetadata:\n${FIGMA_METADATA}" },
+                  {
+                    "type": "image",
+                    "source": {
+                      "type": "base64",
+                      "media_type": "image/png",
+                      "data": "${BASE64_IMAGE}"
+                    }
                   }
-                }
-              ]
-            }]
+                ]
+              }
+            ]
           }
           EOF
 
-          RESPONSE=$(curl https://api.anthropic.com/v1/messages \
+          RESPONSE=$(curl -s https://api.anthropic.com/v1/messages \
             -H "Content-Type: application/json" \
             -H "x-api-key: $ANTHROPIC_API_KEY" \
             -H "anthropic-version: 2023-06-01" \
@@ -192,13 +201,10 @@ jobs:
           git commit -m "feat($ISSUE_KEY): generated feature from Copilot"
           git push --set-upstream origin "$BRANCH"
 
-          PR_URL=$(gh pr create \
+          PR_NUMBER=$(gh pr create \
             --title "Feature $ISSUE_KEY: $SUMMARY" \
             --body "Auto-generated scaffold from Copilot for Jira issue $ISSUE_KEY" \
-            --base main)
+            --base main --json number --jq '.number')
 
-          PR_NUMBER=$(gh pr view "$BRANCH" --json number --jq '.number')
           echo "pr_number=$PR_NUMBER" >> "$GITHUB_OUTPUT"
           echo "PR Number: $PR_NUMBER"
-
-
