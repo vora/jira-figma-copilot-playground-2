@@ -181,6 +181,6 @@ jobs:
 
           PR_NUMBER=$(gh pr view "$BRANCH" --json number --jq '.number')
           echo "pr_number=$PR_NUMBER" >> "$GITHUB_OUTPUT"
-          echo "PR Number: $PR_NUMBER"
+          # echo "PR Number: $PR_NUMBER"
 
 
