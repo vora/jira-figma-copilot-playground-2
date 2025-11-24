@@ -51,6 +51,8 @@ jobs:
       - name: Fetch Figma Png and save to file
         id: figmapng
         run: |
+          FILE_ID=$(echo "${{ steps.extract.outputs.figma_url }}" | grep -oP '(?<=design/|file/)[^/]+')
+          NODE_ID=$(echo "${{ steps.extract.outputs.figma_url }}" | grep -oP '(?<=node-id=)[0-9:-]+')
           curl -s -H "X-Figma-Token: $FIGMA_TOKEN" \
             "https://api.figma.com/v1/images/$FILE_ID?ids=$NODE_ID" \
             -o figma-imagedata.json
