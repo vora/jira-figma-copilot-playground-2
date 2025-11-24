@@ -48,6 +48,19 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
+      - name: Fetch Figma Png and save to file
+        id: figmapng
+        run: |
+          curl -s -H "X-Figma-Token: $FIGMA_TOKEN" \
+            "https://api.figma.com/v1/image/$FILE_ID/nodes?ids=$NODE_ID" \
+            -o figma-imagedata.json
+          JSON_NODE_ID="7328:3843"
+          IMAGE_URL=$(jq -r ".images[\"$JSON_NODE_ID\"]" figma-imagedata.json)
+          curl -fL "$IMAGE_URL" -o node.png
+          base64 -i node.png -o node.png.base64
+
+
+
       - name: Fetch and clean Figma file metadata
         id: figma
         run: |
