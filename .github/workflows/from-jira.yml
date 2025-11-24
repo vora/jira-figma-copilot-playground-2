@@ -184,7 +184,10 @@ jobs:
           RAW_JSON=$(echo "$RESPONSE" \
             | jq -r '.content[0].text' \
             | sed -e 's/^```json//' -e 's/^```//' -e 's/```$//' \
-            | sed -n '/{/,/}/p'
+            | awk 'BEGIN{capture=0} 
+            /\{/ { if(capture==0) start=NR; capture=1 } 
+            { if(capture==1) print } 
+            /\}/ { end=NR }'
           )
 
           echo "$RAW_JSON" \
