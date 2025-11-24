@@ -161,7 +161,7 @@ jobs:
                 "type": "text",
                 "text": "Generate all required React TypeScript files as JSON:\n\n{
                   \"files\": [
-                    { \"path\": \"app/(app)/home/page.tsx\", \"content\": \"...\" },
+                    { \"path\": \"app/page.tsx\", \"content\": \"...\" },
                     { \"path\": \"components/card.tsx\", \"content\": \"...\" },
                     { \"path\": \"components/input.tsx\", \"content\": \"...\" }
                   ]
