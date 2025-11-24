@@ -133,79 +133,67 @@ jobs:
 
       - name: Generate UI via Anthropic
         env:
-    ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
-  run: |
-    DESCRIPTION="${{ steps.extract.outputs.description }}"
-    FIGMA_URL="${{ steps.extract.outputs.figma_url }}"
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+        run: |
+          DESCRIPTION="${{ steps.extract.outputs.description }}"
+          FIGMA_URL="${{ steps.extract.outputs.figma_url }}"
 
-    BASE64_IMAGE=$(cat node.png.base64)
+          BASE64_IMAGE=$(cat node.png.base64)
 
-    # Create the Anthropic request payload
-    cat > anthropic-request.json <<EOF
-    {
-      "model": "claude-sonnet-4-20250514",
-      "max_tokens": 4096,
-      "temperature": 0.2,
-      "messages": [
-        {
-          "role": "user",
-          "content": [
-            {
-              "type": "image",
-              "source": {
-                "type": "base64",
-                "media_type": "image/png",
-                "data": "${BASE64_IMAGE}"
+          cat > anthropic-request.json <<EOF
+          {
+            "model": "claude-sonnet-4-20250514",
+            "max_tokens": 4096,
+            "temperature": 0.2,
+            "messages": [
+              {
+                "role": "user",
+                "content": [
+              {
+                "type": "image",
+                "source": {
+                  "type": "base64",
+                  "media_type": "image/png",
+                  "data": "${BASE64_IMAGE}"
               }
             },
             {
-              "type": "text",
-              "text": "Generate all required React TypeScript files as JSON:\n\n{
-                \"files\": [
-                  { \"path\": \"app/(app)/home/page.tsx\", \"content\": \"...\" },
-                  { \"path\": \"components/card.tsx\", \"content\": \"...\" },
-                  { \"path\": \"components/input.tsx\", \"content\": \"...\" }
-                ]
+                "type": "text",
+                "text": "Generate all required React TypeScript files as JSON:\n\n{
+                  \"files\": [
+                    { \"path\": \"app/(app)/home/page.tsx\", \"content\": \"...\" },
+                    { \"path\": \"components/card.tsx\", \"content\": \"...\" },
+                    { \"path\": \"components/input.tsx\", \"content\": \"...\" }
+                  ]
               }\n\nJira description:\n${DESCRIPTION}\n\nFigma link: ${FIGMA_URL}\n\nFigma metadata:\n${FIGMA_METADATA}\n\nFollow the design shown in the attached image. DO NOT return raw code—return ONLY a JSON object with a top-level 'files' array."
             }
           ]
-        }
-      ]
-    }
-    EOF
-
-    # Call Anthropic API
-    RESPONSE=$(curl https://api.anthropic.com/v1/messages \
-      -H "Content-Type: application/json" \
-      -H "x-api-key: $ANTHROPIC_API_KEY" \
-      -H "anthropic-version: 2023-06-01" \
-      -d @anthropic-request.json)
-
-    echo "Received response, writing files..."
-
-    # Parse the JSON and write each file
-    echo "$RESPONSE" \
-      | jq -c '.content[0].text | fromjson | .files[]' \
-      | while read -r file; do
-          FILE_PATH=$(echo "$file" | jq -r '.path')
-          FILE_CONTENT=$(echo "$file" | jq -r '.content')
-
-          mkdir -p "$(dirname "$FILE_PATH")"
-
-          echo "$FILE_CONTENT" > "$FILE_PATH"
-
-          echo "✔ Generated $FILE_PATH"
-        done
-
-    echo "All files written successfully."
+          }
+          ]
+          }
+          EOF
 
           RESPONSE=$(curl https://api.anthropic.com/v1/messages \
-            -H "Content-Type: application/json" \
-            -H "x-api-key: $ANTHROPIC_API_KEY" \
-            -H "anthropic-version: 2023-06-01" \
-            -d @anthropic-request.json)
+          -H "Content-Type: application/json" \
+          -H "x-api-key: $ANTHROPIC_API_KEY" \
+          -H "anthropic-version: 2023-06-01" \
+          -d @anthropic-request.json)
 
-          echo "$RESPONSE" | jq -r '.content[0].text' > src/components/GeneratedModal.tsx
+          echo "Received response, writing files..."
+
+          echo "$RESPONSE" \
+          | jq -c '.content[0].text | fromjson | .files[]' \
+          | while read -r file; do
+            FILE_PATH=$(echo "$file" | jq -r '.path')
+            FILE_CONTENT=$(echo "$file" | jq -r '.content')
+
+            mkdir -p "$(dirname "$FILE_PATH")"
+
+            echo "$FILE_CONTENT" > "$FILE_PATH"
+
+            echo "✔ Generated $FILE_PATH"
+          done
+
 
       - name: Create feature branch & PR
         run: |
