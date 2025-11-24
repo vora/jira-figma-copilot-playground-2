@@ -54,10 +54,24 @@ jobs:
           curl -s -H "X-Figma-Token: $FIGMA_TOKEN" \
             "https://api.figma.com/v1/images/$FILE_ID?ids=$NODE_ID" \
             -o figma-imagedata.json
+    
+          echo "=== Figma API Response ==="
+          cat figma-imagedata.json
+          echo ""
+    
           JSON_NODE_ID="7328:3843"
-          IMAGE_URL=$(jq -r ".images[\"$JSON_NODE_ID\"]" figma-imagedata.json)
+          MAGE_URL=$(jq -r ".images[\"$JSON_NODE_ID\"]" figma-imagedata.json)
+    
+          echo "=== Extracted URL ==="
+          echo "$IMAGE_URL"
+    
+          if [ -z "$IMAGE_URL" ] || [ "$IMAGE_URL" = "null" ]; then
+           echo "Error: No image URL found in response"
+           exit 1
+          fi
+    
           curl -fL "$IMAGE_URL" -o node.png
-          base64 -i node.png -o node.png.base64
+           base64 -i node.png -o node.png.base64
 
 
 
