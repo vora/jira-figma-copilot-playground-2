@@ -140,7 +140,9 @@ jobs:
         run: |
           DESCRIPTION="${{ steps.extract.outputs.description }}"
           FIGMA_URL="${{ steps.extract.outputs.figma_url }}"
-
+    
+          BASE64_IMAGE=$(cat node.png.base64)
+    
           cat > anthropic-request.json <<EOF
           {
             "model": "claude-sonnet-4-20250514",
@@ -148,8 +150,21 @@ jobs:
             "temperature": 0.2,
             "messages": [{
               "role": "user",
-              "content": "Write a React TypeScript modal component for the following Jira description:\n${DESCRIPTION}\n\nFigma link: ${FIGMA_URL}\n\nFigma metadata: ${FIGMA_METADATA}"
-            }]
+              "content": [
+                {
+                  "type": "image",
+                  "source": {
+                    "type": "base64",
+                    "media_type": "image/png",
+                    "data": "${BASE64_IMAGE}"
+                }
+              },
+              {
+                "type": "text",
+                "text": "Write a React TypeScript modal component for the following Jira description:\n${DESCRIPTION}\n\nFigma link: ${FIGMA_URL}\n\nFigma metadata: ${FIGMA_METADATA}\n\nPlease reference the design shown in the image above."
+              }
+            ]
+          }]
           }
           EOF
 
