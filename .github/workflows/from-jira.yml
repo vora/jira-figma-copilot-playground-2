@@ -52,7 +52,7 @@ jobs:
         id: figmapng
         run: |
           curl -s -H "X-Figma-Token: $FIGMA_TOKEN" \
-            "https://api.figma.com/v1/image/$FILE_ID/nodes?ids=$NODE_ID" \
+            "https://api.figma.com/v1/images/$FILE_ID/nodes?ids=$NODE_ID" \
             -o figma-imagedata.json
           JSON_NODE_ID="7328:3843"
           IMAGE_URL=$(jq -r ".images[\"$JSON_NODE_ID\"]" figma-imagedata.json)
