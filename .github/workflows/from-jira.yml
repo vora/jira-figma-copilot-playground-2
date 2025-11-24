@@ -60,7 +60,7 @@ jobs:
           cat figma-imagedata.json
           echo ""
 
-          JSON_NODE_ID="7328:3843"
+          JSON_NODE_ID="1748:1672"
           IMAGE_URL=$(jq -r ".images[\"$JSON_NODE_ID\"]" figma-imagedata.json)
 
           echo "=== Extracted URL ==="
