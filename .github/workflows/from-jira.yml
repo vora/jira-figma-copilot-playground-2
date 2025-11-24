@@ -73,7 +73,7 @@ jobs:
           fi
     
           curl -fL "$IMAGE_URL" -o node.png
-           base64 -i node.png -o node.png.base64
+          base64 node.png > node.png.base64
 
 
 
