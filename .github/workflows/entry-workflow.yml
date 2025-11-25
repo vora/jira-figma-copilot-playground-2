@@ -34,19 +34,23 @@ jobs:
           DESCRIPTION=$(jq -r .client_payload.description < "$GITHUB_EVENT_PATH")
           FIGMA_URL=$(jq -r .client_payload.figma_link < "$GITHUB_EVENT_PATH")
           JIRA_LABEL=$(jq -r .client_payload.label < "$GITHUB_EVENT_PATH")
+
           echo "issue_key=$ISSUE_KEY" >> $GITHUB_OUTPUT
+
           echo "summary<<EOF" >> $GITHUB_OUTPUT
           echo "$SUMMARY" >> $GITHUB_OUTPUT
           echo "EOF" >> $GITHUB_OUTPUT
-  
+
           echo "description<<EOF" >> $GITHUB_OUTPUT
           echo "$DESCRIPTION" >> $GITHUB_OUTPUT
           echo "EOF" >> $GITHUB_OUTPUT
 
           echo "figma_url=$FIGMA_URL" >> $GITHUB_OUTPUT
           echo "jira_label=$JIRA_LABEL" >> $GITHUB_OUTPUT
-          FILE_ID=$(echo "$FIGMA_URL" | grep -oP '(?<=design/|file/)[^/]+')
-          NODE_ID=$(echo "$FIGMA_URL" | grep -oP '(?<=node-id=)[0-9:-]+')
+
+          FILE_ID=$(echo "$FIGMA_URL" | grep -oP '(?<=design/|file/)[^/]+') || true
+          NODE_ID=$(echo "$FIGMA_URL" | grep -oP '(?<=node-id=)[0-9:-]+') || true
+
           echo "figma_file_id=$FILE_ID" >> $GITHUB_OUTPUT
           echo "figma_node_id=$NODE_ID" >> $GITHUB_OUTPUT
 
