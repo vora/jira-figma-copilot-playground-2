@@ -14,4 +14,6 @@ jobs:
           echo "Processing screen:"
           echo "Issue: ${{ github.event.client_payload.issueKey }}"
           echo "Summary: ${{ github.event.client_payload.summary }}"
-          echo "Figma: ${{ github.event.client_payload.figma_link }}"
+          echo "FigmaFileId: ${{ github.event.client_payload.figma_file_id }}"
+          echo "FigmaNodeId: ${{ github.event.client_payload.figma_node_id }}"         
+          echo "Description: ${{ github.event.client_payload.description }}"

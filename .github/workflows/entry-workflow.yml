@@ -45,7 +45,10 @@ jobs:
 
           echo "figma_url=$FIGMA_URL" >> $GITHUB_OUTPUT
           echo "jira_label=$JIRA_LABEL" >> $GITHUB_OUTPUT
-
+          FILE_ID=$(echo "${{ steps.extract.outputs.figma_url }}" | grep -oP '(?<=design/|file/)[^/]+')
+          NODE_ID=$(echo "${{ steps.extract.outputs.figma_url }}" | grep -oP '(?<=node-id=)[0-9:-]+')
+          echo "figma_file_id=$FILE_ID" >> $GITHUB_OUTPUT
+          echo "figma_node_id=$NODE_ID" >> $GITHUB_OUTPUT
 
       - name: Route based on label
         run: |
@@ -72,12 +75,14 @@ jobs:
                 --arg issueKey "${{ steps.extract.outputs.issue_key }}" \
                 --arg summary "${{ steps.extract.outputs.summary }}" \
                 --arg description "${{ steps.extract.outputs.description }}" \
-                --arg figma "${{ steps.extract.outputs.figma_url }}" \
+                --arg figmaFileId "${{ steps.extract.outputs.figma_file_id }}"
+                --arg figmaNodeId "${{ steps.extract.outputs.figma_node_id }}" \
                 '{event_type: $event, client_payload: {
                     issueKey: $issueKey,
                     summary: $summary,
                     description: $description,
-                    figma_link: $figma
+                    figma_file_id: $figmaFileId
+                    figma_node_id: $figmaNodeId
                 }}')"
           # Optional: implement verification with JIRA_WEBHOOK_SECRET
 
