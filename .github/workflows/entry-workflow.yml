@@ -45,8 +45,8 @@ jobs:
 
           echo "figma_url=$FIGMA_URL" >> $GITHUB_OUTPUT
           echo "jira_label=$JIRA_LABEL" >> $GITHUB_OUTPUT
-          FILE_ID=$(echo "${{ steps.extract.outputs.figma_url }}" | grep -oP '(?<=design/|file/)[^/]+')
-          NODE_ID=$(echo "${{ steps.extract.outputs.figma_url }}" | grep -oP '(?<=node-id=)[0-9:-]+')
+          FILE_ID=$(echo "$FIGMA_URL" | grep -oP '(?<=design/|file/)[^/]+')
+          NODE_ID=$(echo "$FIGMA_URL" | grep -oP '(?<=node-id=)[0-9:-]+')
           echo "figma_file_id=$FILE_ID" >> $GITHUB_OUTPUT
           echo "figma_node_id=$NODE_ID" >> $GITHUB_OUTPUT
 
