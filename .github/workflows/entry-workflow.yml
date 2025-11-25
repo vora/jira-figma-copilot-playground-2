@@ -49,7 +49,7 @@ jobs:
 
       - name: Route based on label
         run: |
-          LABEL="${{ steps.extract.outputs.label }}"
+          LABEL="${{ steps.extract.outputs.jira_label }}"
           echo "Routing based on label: $LABEL"
 
           if [ "$LABEL" = "Feature-Component" ]; then
