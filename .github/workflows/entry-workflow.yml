@@ -85,7 +85,7 @@ jobs:
                     issueKey: $issueKey,
                     summary: $summary,
                     description: $description,
-                    figma_file_id: $figmaFileId
+                    figma_file_id: $figmaFileId,
                     figma_node_id: $figmaNodeId
                 }}')"
           # Optional: implement verification with JIRA_WEBHOOK_SECRET
