@@ -1,0 +1,17 @@
+{
+  "id": "1748:1672",
+  "name": "PI214 BPP-104013 Client Info Dashboard Last Card",
+  "type": "RECTANGLE",
+  "layout": {
+    "width": 375.0,
+    "height": 1300.0
+  },
+  "colors": {
+    "backgroundColor": null,
+    "fills": [
+      null
+    ],
+    "strokes": []
+  },
+  "children": []
+}
