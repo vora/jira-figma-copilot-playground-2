@@ -15,7 +15,6 @@ jobs:
     environment: figma-jam
     env:
       JIRA_WEBHOOK_SECRET: ${{ secrets.JIRA_WEBHOOK_SECRET }}
-      FIGMA_TOKEN: ${{ secrets.FIGMA_TOKEN }}
       GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
     steps:
