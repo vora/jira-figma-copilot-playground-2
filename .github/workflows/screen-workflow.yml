@@ -17,3 +17,29 @@ jobs:
           echo "FigmaFileId: ${{ github.event.client_payload.figma_file_id }}"
           echo "FigmaNodeId: ${{ github.event.client_payload.figma_node_id }}"         
           echo "Description: ${{ github.event.client_payload.description }}"
+
+
+# using the figma images api. the node_id from the figma url is returned with a dash in the middle ex: '1111-2342'
+# the response that we get from the api looks like this for the image id
+# {"err":null,"images":{"1748:1672":"https://figma-alpha-api.s3.us-west-2.amazonaws.com/images/19b7386b-edd5-4bb9-8443-64f50a446c3b"}}
+# So if we are planning on putting the 
+      - name: Fetch Figma Png and save to file
+        id: figmapng
+        run: |
+          FILE_ID=$(echo "${{ steps.extract.outputs.figma_url }}" | grep -oP '(?<=design/|file/)[^/]+')
+          NODE_ID=$(echo "${{ steps.extract.outputs.figma_url }}" | grep -oP '(?<=node-id=)[0-9:-]+')
+          curl -s -H "X-Figma-Token: $FIGMA_TOKEN" \
+            "https://api.figma.com/v1/images/$FILE_ID?ids=$NODE_ID" \
+            -o figma-imagedata.json
+    
+          echo "=== Figma API Response ==="
+          cat figma-imagedata.json
+          echo ""
+    
+          JSON_NODE_ID=$(jq -r '.images | keys[0]' figma-imagedata.json)
+          IMAGE_URL=$(jq -r ".images[\"$JSON_NODE_ID\"]" figma-imagedata.json)
+
+          echo "Extracted Node ID: $JSON_NODE_ID"
+          echo "Extracted Image URL: $IMAGE_URL"
+    
+     
