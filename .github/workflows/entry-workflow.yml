@@ -79,7 +79,7 @@ jobs:
                 --arg issueKey "${{ steps.extract.outputs.issue_key }}" \
                 --arg summary "${{ steps.extract.outputs.summary }}" \
                 --arg description "${{ steps.extract.outputs.description }}" \
-                --arg figmaFileId "${{ steps.extract.outputs.figma_file_id }}"
+                --arg figmaFileId "${{ steps.extract.outputs.figma_file_id }}" \
                 --arg figmaNodeId "${{ steps.extract.outputs.figma_node_id }}" \
                 '{event_type: $event, client_payload: {
                     issueKey: $issueKey,
