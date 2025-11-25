@@ -1,229 +1,229 @@
-name: Jira → Feature Generator
+# name: Jira → Feature Generator
 
-permissions:
-  contents: write
-  pull-requests: write
-  id-token: write
+# permissions:
+#   contents: write
+#   pull-requests: write
+#   id-token: write
 
-on:
-  repository_dispatch:
-    types: [jira_issue_ready_for_dev]
+# on:
+#   repository_dispatch:
+#     types: [jira_issue_ready_for_dev]
 
-jobs:
-  generate_feature:
-    runs-on: ubuntu-latest
-    environment: figma-jam
-    env:
-      JIRA_WEBHOOK_SECRET: ${{ secrets.JIRA_WEBHOOK_SECRET }}
-      FIGMA_TOKEN: ${{ secrets.FIGMA_TOKEN }}
-      GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+# jobs:
+#   generate_feature:
+#     runs-on: ubuntu-latest
+#     environment: figma-jam
+#     env:
+#       JIRA_WEBHOOK_SECRET: ${{ secrets.JIRA_WEBHOOK_SECRET }}
+#       FIGMA_TOKEN: ${{ secrets.FIGMA_TOKEN }}
+#       GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-    steps:
-      - name: Validate incoming webhook signature
-        run: |
-          echo "Webhook payload: $GITHUB_EVENT_PATH"
-          cat "$GITHUB_EVENT_PATH"
-          # Optional: implement verification with JIRA_WEBHOOK_SECRET
+#     steps:
+#       - name: Validate incoming webhook signature
+#         run: |
+#           echo "Webhook payload: $GITHUB_EVENT_PATH"
+#           cat "$GITHUB_EVENT_PATH"
+#           # Optional: implement verification with JIRA_WEBHOOK_SECRET
 
-      - name: Extract issue and Figma data
-        id: extract
-        run: |
-          ISSUE_KEY=$(jq -r .client_payload.issueKey < "$GITHUB_EVENT_PATH")
-          SUMMARY=$(jq -r .client_payload.summary < "$GITHUB_EVENT_PATH")
-          DESCRIPTION=$(jq -r .client_payload.description < "$GITHUB_EVENT_PATH")
-          FIGMA_URL=$(jq -r .client_payload.figma_link < "$GITHUB_EVENT_PATH")
+#       - name: Extract issue and Figma data
+#         id: extract
+#         run: |
+#           ISSUE_KEY=$(jq -r .client_payload.issueKey < "$GITHUB_EVENT_PATH")
+#           SUMMARY=$(jq -r .client_payload.summary < "$GITHUB_EVENT_PATH")
+#           DESCRIPTION=$(jq -r .client_payload.description < "$GITHUB_EVENT_PATH")
+#           FIGMA_URL=$(jq -r .client_payload.figma_link < "$GITHUB_EVENT_PATH")
 
-          echo "issue_key=$ISSUE_KEY" >> $GITHUB_OUTPUT
-          echo "summary<<EOF" >> $GITHUB_OUTPUT
-          echo "$SUMMARY" >> $GITHUB_OUTPUT
-          echo "EOF" >> $GITHUB_OUTPUT
+#           echo "issue_key=$ISSUE_KEY" >> $GITHUB_OUTPUT
+#           echo "summary<<EOF" >> $GITHUB_OUTPUT
+#           echo "$SUMMARY" >> $GITHUB_OUTPUT
+#           echo "EOF" >> $GITHUB_OUTPUT
 
-          echo "description<<EOF" >> $GITHUB_OUTPUT
-          echo "$DESCRIPTION" >> $GITHUB_OUTPUT
-          echo "EOF" >> $GITHUB_OUTPUT
+#           echo "description<<EOF" >> $GITHUB_OUTPUT
+#           echo "$DESCRIPTION" >> $GITHUB_OUTPUT
+#           echo "EOF" >> $GITHUB_OUTPUT
 
-          echo "figma_url=$FIGMA_URL" >> $GITHUB_OUTPUT
+#           echo "figma_url=$FIGMA_URL" >> $GITHUB_OUTPUT
 
-      - name: Checkout repository
-        uses: actions/checkout@v4
+#       - name: Checkout repository
+#         uses: actions/checkout@v4
 
-      - name: Fetch Figma Png and save to file
-        id: figmapng
-        run: |
-          FILE_ID=$(echo "${{ steps.extract.outputs.figma_url }}" | grep -oP '(?<=design/|file/)[^/]+')
-          NODE_ID=$(echo "${{ steps.extract.outputs.figma_url }}" | grep -oP '(?<=node-id=)[0-9:-]+')
-          curl -s -H "X-Figma-Token: $FIGMA_TOKEN" \
-            "https://api.figma.com/v1/images/$FILE_ID?ids=$NODE_ID" \
-            -o figma-imagedata.json
+#       - name: Fetch Figma Png and save to file
+#         id: figmapng
+#         run: |
+#           FILE_ID=$(echo "${{ steps.extract.outputs.figma_url }}" | grep -oP '(?<=design/|file/)[^/]+')
+#           NODE_ID=$(echo "${{ steps.extract.outputs.figma_url }}" | grep -oP '(?<=node-id=)[0-9:-]+')
+#           curl -s -H "X-Figma-Token: $FIGMA_TOKEN" \
+#             "https://api.figma.com/v1/images/$FILE_ID?ids=$NODE_ID" \
+#             -o figma-imagedata.json
 
-          echo "=== Figma API Response ==="
-          cat figma-imagedata.json
-          echo ""
+#           echo "=== Figma API Response ==="
+#           cat figma-imagedata.json
+#           echo ""
 
-          JSON_NODE_ID="1748:1672"
-          IMAGE_URL=$(jq -r ".images[\"$JSON_NODE_ID\"]" figma-imagedata.json)
+#           JSON_NODE_ID="1748:1672"
+#           IMAGE_URL=$(jq -r ".images[\"$JSON_NODE_ID\"]" figma-imagedata.json)
 
-          echo "=== Extracted URL ==="
-          echo "$IMAGE_URL"
+#           echo "=== Extracted URL ==="
+#           echo "$IMAGE_URL"
 
-          if [ -z "$IMAGE_URL" ] || [ "$IMAGE_URL" = "null" ]; then
-           echo "Error: No image URL found in response"
-           exit 1
-          fi
+#           if [ -z "$IMAGE_URL" ] || [ "$IMAGE_URL" = "null" ]; then
+#            echo "Error: No image URL found in response"
+#            exit 1
+#           fi
 
-          curl -fL "$IMAGE_URL" -o node.png
-          base64 node.png > node.png.base64
+#           curl -fL "$IMAGE_URL" -o node.png
+#           base64 node.png > node.png.base64
 
-      - name: Fetch and clean Figma file metadata
-        id: figma
-        run: |
-          FILE_ID=$(echo "${{ steps.extract.outputs.figma_url }}" | grep -oP '(?<=design/|file/)[^/]+')
-          NODE_ID=$(echo "${{ steps.extract.outputs.figma_url }}" | grep -oP '(?<=node-id=)[0-9:-]+')
+#       - name: Fetch and clean Figma file metadata
+#         id: figma
+#         run: |
+#           FILE_ID=$(echo "${{ steps.extract.outputs.figma_url }}" | grep -oP '(?<=design/|file/)[^/]+')
+#           NODE_ID=$(echo "${{ steps.extract.outputs.figma_url }}" | grep -oP '(?<=node-id=)[0-9:-]+')
 
-          curl -s -H "X-Figma-Token: $FIGMA_TOKEN" \
-            "https://api.figma.com/v1/files/$FILE_ID/nodes?ids=$NODE_ID" \
-            -o figma-metadata.json
+#           curl -s -H "X-Figma-Token: $FIGMA_TOKEN" \
+#             "https://api.figma.com/v1/files/$FILE_ID/nodes?ids=$NODE_ID" \
+#             -o figma-metadata.json
 
-          # Clean metadata to a simplified structure
-          jq '{
-            id: .nodes[].document.id,
-            name: .nodes[].document.name,
-            type: .nodes[].document.type,
-            layout: {
-              width: .nodes[].document.absoluteBoundingBox.width,
-              height: .nodes[].document.absoluteBoundingBox.height
-            },
-             colors: {
-              backgroundColor: .nodes[].document.backgroundColor?,
-              fills: (.nodes[].document.fills // [] | map(.color)),
-              strokes: (.nodes[].document.strokes // [] | map(.color))
+#           # Clean metadata to a simplified structure
+#           jq '{
+#             id: .nodes[].document.id,
+#             name: .nodes[].document.name,
+#             type: .nodes[].document.type,
+#             layout: {
+#               width: .nodes[].document.absoluteBoundingBox.width,
+#               height: .nodes[].document.absoluteBoundingBox.height
+#             },
+#              colors: {
+#               backgroundColor: .nodes[].document.backgroundColor?,
+#               fills: (.nodes[].document.fills // [] | map(.color)),
+#               strokes: (.nodes[].document.strokes // [] | map(.color))
 
-            },
-            children: (.nodes[].document.children // [] | map({
-              id: .id,
-              name: .name,
-              type: .type,
-              layout: .absoluteBoundingBox,
-              fills: (.fills // [] | map(.color)),
-              strokes: (.strokes // [] | map(.color)),              
-              style: .style?
-            }))
-          }' figma-metadata.json > figma-clean.json
+#             },
+#             children: (.nodes[].document.children // [] | map({
+#               id: .id,
+#               name: .name,
+#               type: .type,
+#               layout: .absoluteBoundingBox,
+#               fills: (.fills // [] | map(.color)),
+#               strokes: (.strokes // [] | map(.color)),              
+#               style: .style?
+#             }))
+#           }' figma-metadata.json > figma-clean.json
 
-          # Set outputs
-          echo "figma_metadata<<EOF" >> $GITHUB_OUTPUT
-          cat figma-clean.json >> $GITHUB_OUTPUT
-          FIGMA_METADATA=$(cat figma-clean.json)
+#           # Set outputs
+#           echo "figma_metadata<<EOF" >> $GITHUB_OUTPUT
+#           cat figma-clean.json >> $GITHUB_OUTPUT
+#           FIGMA_METADATA=$(cat figma-clean.json)
 
-          echo "EOF" >> $GITHUB_OUTPUT
-          echo "figma_file_id=$FILE_ID" >> $GITHUB_OUTPUT
+#           echo "EOF" >> $GITHUB_OUTPUT
+#           echo "figma_file_id=$FILE_ID" >> $GITHUB_OUTPUT
 
-      - name: Create workspace payload
-        id: payload
-        run: |
-          cat <<EOF > workspace-payload.json
-          {
-            "issueKey": "${{ steps.extract.outputs.issue_key }}",
-            "summary": "${{ steps.extract.outputs.summary }}",
-            "description": "${{ steps.extract.outputs.description }}",
-            "figmaFileId": "${{ steps.figma.outputs.figma_file_id }}",
-            "figmaMetadata": ${{ steps.figma.outputs.figma_metadata }}
-          }
-          EOF
+#       - name: Create workspace payload
+#         id: payload
+#         run: |
+#           cat <<EOF > workspace-payload.json
+#           {
+#             "issueKey": "${{ steps.extract.outputs.issue_key }}",
+#             "summary": "${{ steps.extract.outputs.summary }}",
+#             "description": "${{ steps.extract.outputs.description }}",
+#             "figmaFileId": "${{ steps.figma.outputs.figma_file_id }}",
+#             "figmaMetadata": ${{ steps.figma.outputs.figma_metadata }}
+#           }
+#           EOF
 
-      - name: Generate UI via Anthropic
-        env:
-          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
-        run: |
-          DESCRIPTION="${{ steps.extract.outputs.description }}"
-          FIGMA_URL="${{ steps.extract.outputs.figma_url }}"
+#       - name: Generate UI via Anthropic
+#         env:
+#           ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+#         run: |
+#           DESCRIPTION="${{ steps.extract.outputs.description }}"
+#           FIGMA_URL="${{ steps.extract.outputs.figma_url }}"
 
-          BASE64_IMAGE=$(cat node.png.base64)
+#           BASE64_IMAGE=$(cat node.png.base64)
 
-          cat > anthropic-request.json <<EOF
-          {
-            "model": "claude-sonnet-4-20250514",
-            "max_tokens": 4096,
-            "temperature": 0.2,
-            "messages": [
-              {
-                "role": "user",
-                "content": [
-              {
-                "type": "image",
-                "source": {
-                  "type": "base64",
-                  "media_type": "image/png",
-                  "data": "${BASE64_IMAGE}"
-              }
-            },
-            {
-                "type": "text",
-                "text": "Generate all required React TypeScript files as JSON:\n\n{
-                  \"files\": [
-                    { \"path\": \"app/page.tsx\", \"content\": \"...\" },
-                    { \"path\": \"components/card.tsx\", \"content\": \"...\" },
-                    { \"path\": \"components/input.tsx\", \"content\": \"...\" }
-                  ]
-              }\n\nJira description:\n${DESCRIPTION}\n\nFigma link: ${FIGMA_URL}\n\nFigma metadata:\n${FIGMA_METADATA}\n\nFollow the design shown in the attached image. DO NOT return raw code—return ONLY a JSON object with a top-level 'files' array."
-            }
-          ]
-          }
-          ]
-          }
-          EOF
+#           cat > anthropic-request.json <<EOF
+#           {
+#             "model": "claude-sonnet-4-20250514",
+#             "max_tokens": 4096,
+#             "temperature": 0.2,
+#             "messages": [
+#               {
+#                 "role": "user",
+#                 "content": [
+#               {
+#                 "type": "image",
+#                 "source": {
+#                   "type": "base64",
+#                   "media_type": "image/png",
+#                   "data": "${BASE64_IMAGE}"
+#               }
+#             },
+#             {
+#                 "type": "text",
+#                 "text": "Generate all required React TypeScript files as JSON:\n\n{
+#                   \"files\": [
+#                     { \"path\": \"app/page.tsx\", \"content\": \"...\" },
+#                     { \"path\": \"components/card.tsx\", \"content\": \"...\" },
+#                     { \"path\": \"components/input.tsx\", \"content\": \"...\" }
+#                   ]
+#               }\n\nJira description:\n${DESCRIPTION}\n\nFigma link: ${FIGMA_URL}\n\nFigma metadata:\n${FIGMA_METADATA}\n\nFollow the design shown in the attached image. DO NOT return raw code—return ONLY a JSON object with a top-level 'files' array."
+#             }
+#           ]
+#           }
+#           ]
+#           }
+#           EOF
 
-          RESPONSE=$(curl https://api.anthropic.com/v1/messages \
-          -H "Content-Type: application/json" \
-          -H "x-api-key: $ANTHROPIC_API_KEY" \
-          -H "anthropic-version: 2023-06-01" \
-          -d @anthropic-request.json)
+#           RESPONSE=$(curl https://api.anthropic.com/v1/messages \
+#           -H "Content-Type: application/json" \
+#           -H "x-api-key: $ANTHROPIC_API_KEY" \
+#           -H "anthropic-version: 2023-06-01" \
+#           -d @anthropic-request.json)
 
-          echo "Received response, writing files..."
+#           echo "Received response, writing files..."
 
-          RAW_JSON=$(echo "$RESPONSE" \
-            | jq -r '.content[0].text' \
-            | sed -e 's/^```json//' -e 's/^```//' -e 's/```$//' \
-            | awk 'BEGIN{capture=0} 
-            /\{/ { if(capture==0) start=NR; capture=1 } 
-            { if(capture==1) print } 
-            /\}/ { end=NR }'
-          )
+#           RAW_JSON=$(echo "$RESPONSE" \
+#             | jq -r '.content[0].text' \
+#             | sed -e 's/^```json//' -e 's/^```//' -e 's/```$//' \
+#             | awk 'BEGIN{capture=0} 
+#             /\{/ { if(capture==0) start=NR; capture=1 } 
+#             { if(capture==1) print } 
+#             /\}/ { end=NR }'
+#           )
 
-          echo "$RAW_JSON" \
-            | jq -c '.files[]' \
-            | while read -r file; do
-              FILE_PATH=$(echo "$file" | jq -r '.path')
-              FILE_CONTENT=$(echo "$file" | jq -r '.content')
+#           echo "$RAW_JSON" \
+#             | jq -c '.files[]' \
+#             | while read -r file; do
+#               FILE_PATH=$(echo "$file" | jq -r '.path')
+#               FILE_CONTENT=$(echo "$file" | jq -r '.content')
 
-              mkdir -p "$(dirname "$FILE_PATH")"
+#               mkdir -p "$(dirname "$FILE_PATH")"
 
-              echo "$FILE_CONTENT" > "$FILE_PATH"
+#               echo "$FILE_CONTENT" > "$FILE_PATH"
 
-              echo "✔ Generated $FILE_PATH"
-          done
+#               echo "✔ Generated $FILE_PATH"
+#           done
 
 
-      - name: Create feature branch & PR
-        run: |
-          ISSUE_KEY="${{ steps.extract.outputs.issue_key }}"
-          SUMMARY="${{ steps.extract.outputs.summary }}"
-          TIMESTAMP=$(date +%Y%m%d%H%M%S)
-          BRANCH="feat/${ISSUE_KEY}-${TIMESTAMP}"
+#       - name: Create feature branch & PR
+#         run: |
+#           ISSUE_KEY="${{ steps.extract.outputs.issue_key }}"
+#           SUMMARY="${{ steps.extract.outputs.summary }}"
+#           TIMESTAMP=$(date +%Y%m%d%H%M%S)
+#           BRANCH="feat/${ISSUE_KEY}-${TIMESTAMP}"
 
-          git config --global user.name "github-actions[bot]"
-          git config --global user.email "github-actions[bot]@users.noreply.github.com"
+#           git config --global user.name "github-actions[bot]"
+#           git config --global user.email "github-actions[bot]@users.noreply.github.com"
 
-          git checkout -b "$BRANCH"
-          git add .
-          git commit -m "feat($ISSUE_KEY): generated feature from Copilot"
-          git push --set-upstream origin "$BRANCH"
+#           git checkout -b "$BRANCH"
+#           git add .
+#           git commit -m "feat($ISSUE_KEY): generated feature from Copilot"
+#           git push --set-upstream origin "$BRANCH"
 
-          PR_URL=$(gh pr create \
-            --title "Feature $ISSUE_KEY: $SUMMARY" \
-            --body "Auto-generated scaffold from Copilot for Jira issue $ISSUE_KEY" \
-            --base main)
+#           PR_URL=$(gh pr create \
+#             --title "Feature $ISSUE_KEY: $SUMMARY" \
+#             --body "Auto-generated scaffold from Copilot for Jira issue $ISSUE_KEY" \
+#             --base main)
 
-          PR_NUMBER=$(gh pr view "$BRANCH" --json number --jq '.number')
-          echo "pr_number=$PR_NUMBER" >> "$GITHUB_OUTPUT"
-          echo "PR Number: $PR_NUMBER"
+#           PR_NUMBER=$(gh pr view "$BRANCH" --json number --jq '.number')
+#           echo "pr_number=$PR_NUMBER" >> "$GITHUB_OUTPUT"
+#           echo "PR Number: $PR_NUMBER"
