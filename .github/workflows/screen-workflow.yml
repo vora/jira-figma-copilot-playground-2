@@ -1,0 +1,17 @@
+name: Screen Workflow
+
+on:
+  repository_dispatch:
+    types: [feature_screen]
+
+jobs:
+  handle_screen:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Use payload
+        run: |
+          echo "Processing screen:"
+          echo "Issue: ${{ github.event.client_payload.issueKey }}"
+          echo "Summary: ${{ github.event.client_payload.summary }}"
+          echo "Figma: ${{ github.event.client_payload.figma_link }}"
