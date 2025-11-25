@@ -28,9 +28,10 @@ jobs:
       - name: Fetch Figma Png and save to file
         id: figmapng
         run: |
-      
+          FIGMA_FILE_ID="${{ github.event.client_payload.figma_file_id }}"
+          FIGMA_NODE_ID="${{ github.event.client_payload.figma_node_id }}"
           curl -s -H "X-Figma-Token: $FIGMA_TOKEN" \
-            "https://api.figma.com/v1/images/$FigmaFileId?ids=$FigmaNodeId" \
+            "https://api.figma.com/v1/images/$FIGMA_FILE_ID?ids=$FIGMA_NODE_ID" \
             -o figma-imagedata.json
     
           echo "=== Figma API Response ==="
