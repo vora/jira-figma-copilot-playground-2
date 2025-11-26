@@ -73,6 +73,7 @@ jobs:
     
           BASE64_IMAGE=$(cat screen.png.base64)
     
+          # Create anthropic-request.json
           cat > anthropic-request.json <<EOF
           {
             "model": "claude-sonnet-4-20250514",
@@ -106,21 +107,23 @@ jobs:
           }
           EOF
 
+          # Call the Anthropic API
           RESPONSE=$(curl https://api.anthropic.com/v1/messages \
             -H "Content-Type: application/json" \
             -H "x-api-key: $ANTHROPIC_API_KEY" \
             -H "anthropic-version: 2023-06-01" \
             -d @anthropic-request.json)
           
-          RAW_JSON=$(echo "$RESPONSE" \
-            | jq -r '.content[0].text' \
-            | sed -e 's/^```json//' -e 's/^```//' -e 's/```$//' \
-            | awk 'BEGIN{capture=0} 
-            /\{/ { if(capture==0) start=NR; capture=1 } 
-            { if(capture==1) print } 
-            /\}/ { end=NR }'
-          )
+          # Extract the text content from the API response
+          TEXT_CONTENT=$(echo "$RESPONSE" | jq -r '.content[0].text')
+
+          # Strip surrounding code fences (```json or ```) to get the clean JSON object
+          RAW_JSON=$(echo "$TEXT_CONTENT" \
+            | sed -e 's/^[[:space:]]*```json[[:space:]]*//g' \
+            -e 's/^[[:space:]]*```[[:space:]]*//g' \
+            -e 's/[[:space:]]*```[[:space:]]*$//g')
   
+          # Process and save the files
           echo "$RAW_JSON" \
             | jq -c '.files[]' \
             | while read -r file; do
