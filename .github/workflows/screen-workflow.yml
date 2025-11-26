@@ -82,17 +82,23 @@ jobs:
               {
                 "role": "user",
                 "content": [
-                  {
-                    "type": "image",
-                    "source": {
-                      "type": "base64",
-                      "media_type": "image/png",
-                      "data": "${BASE64_IMAGE}"
-                    }
-                  },
-                  {
-                    "type": "text",
-                    "text": "Write a React TypeScript modal component for the following Jira description:\n${DESCRIPTION}\n\nPlease reference the design shown in the image above."
+              {
+                "type": "image",
+                "source": {
+                  "type": "base64",
+                  "media_type": "image/png",
+                  "data": "${BASE64_IMAGE}"
+              }
+            },
+            {
+                "type": "text",
+                "text": "Generate all required React TypeScript files as JSON:\n\n{
+                  \"files\": [
+                    { \"path\": \"app/page.tsx\", \"content\": \"...\" },
+                    { \"path\": \"components/card.tsx\", \"content\": \"...\" },
+                    { \"path\": \"components/input.tsx\", \"content\": \"...\" }
+                  ]
+            }\n\nJira description:\n${DESCRIPTION}\n\nFigma link: ${FIGMA_URL}\n\nFigma metadata:\n${FIGMA_METADATA}\n\nFollow the design shown in the attached image. DO NOT return raw code—return ONLY a JSON object with a top-level 'files' array."
                   }
                 ]
               }
