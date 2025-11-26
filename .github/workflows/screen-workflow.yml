@@ -108,22 +108,23 @@ jobs:
             | jq -r '.content[0].text' \
             | sed -e 's/^```json//' -e 's/^```//' -e 's/```$//' \
             | awk 'BEGIN{capture=0} 
-              /\{/ { if(capture==0) start=NR; capture=1 } 
-              { if(capture==1) print } 
-              /\}/ { end=NR }'
+            /\{/ { if(capture==0) start=NR; capture=1 } 
+            { if(capture==1) print } 
+            /\}/ { end=NR }'
           )
-
+  
           echo "$RAW_JSON" \
             | jq -c '.files[]' \
             | while read -r file; do
-                FILE_PATH=$(echo "$file" | jq -r '.path')
-                FILE_CONTENT=$(echo "$file" | jq -r '.content')
-
-                mkdir -p "$(dirname "$FILE_PATH")"
-                echo "$FILE_CONTENT" > "$FILE_PATH"
-
-                echo "✔ Generated $FILE_PATH"
-             done
+              FILE_PATH=$(echo "$file" | jq -r '.path')
+              FILE_CONTENT=$(echo "$file" | jq -r '.content')
+  
+              mkdir -p "$(dirname "$FILE_PATH")"
+  
+              echo "$FILE_CONTENT" > "$FILE_PATH"
+  
+              echo "✔ Generated $FILE_PATH"
+          done
 
           
 
