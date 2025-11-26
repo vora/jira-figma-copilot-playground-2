@@ -120,8 +120,14 @@ jobs:
             | sed -e 's/^[[:space:]]*```json[[:space:]]*//g' \
             -e 's/^[[:space:]]*```[[:space:]]*//g' \
             -e 's/[[:space:]]*```[[:space:]]*$//g')
+
+          echo "--- RAW_JSON for Debugging ---"
+          echo "$RAW_JSON" 
+          echo "----------------------------"
+
+          RAW_JSON_CLEANED=$(echo "$RAW_JSON" | awk '/^\{/,/\}/' | sed 'N;/}$/P;D')
   
-          echo "$RAW_JSON" \
+          echo "$RAW_JSON_CLEANED" \
             | jq -c '.files[]' \
             | while read -r file; do
               FILE_PATH=$(echo "$file" | jq -r '.path')
