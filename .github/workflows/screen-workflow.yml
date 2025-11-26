@@ -107,23 +107,20 @@ jobs:
           }
           EOF
 
-          # Call the Anthropic API
+         
           RESPONSE=$(curl https://api.anthropic.com/v1/messages \
             -H "Content-Type: application/json" \
             -H "x-api-key: $ANTHROPIC_API_KEY" \
             -H "anthropic-version: 2023-06-01" \
             -d @anthropic-request.json)
           
-          # Extract the text content from the API response
           TEXT_CONTENT=$(echo "$RESPONSE" | jq -r '.content[0].text')
 
-          # Strip surrounding code fences (```json or ```) to get the clean JSON object
           RAW_JSON=$(echo "$TEXT_CONTENT" \
             | sed -e 's/^[[:space:]]*```json[[:space:]]*//g' \
             -e 's/^[[:space:]]*```[[:space:]]*//g' \
             -e 's/[[:space:]]*```[[:space:]]*$//g')
   
-          # Process and save the files
           echo "$RAW_JSON" \
             | jq -c '.files[]' \
             | while read -r file; do
