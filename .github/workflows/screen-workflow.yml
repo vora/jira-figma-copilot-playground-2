@@ -90,13 +90,13 @@ jobs:
                       "data": "${BASE64_IMAGE}"
                     }
                   },
-                {
-                "type": "text",
-                "text": "Write a React TypeScript modal component for the following Jira description:\n${DESCRIPTION}\n\n Please reference the design shown in the image above."
+                  {
+                    "type": "text",
+                    "text": "Write a React TypeScript modal component for the following Jira description:\n${DESCRIPTION}\n\nPlease reference the design shown in the image above."
+                  }
+                ]
               }
             ]
-          }
-          ]
           }
           EOF
 
