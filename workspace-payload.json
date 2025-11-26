@@ -1,0 +1,79 @@
+{
+  "issueKey": "PLAYG-3",
+  "summary": "trying to make a entire screen",
+  "description": "You are generating a full screen using the Broker App White Label design system.
+You MUST adhere to the Figma metadata and PNG reference located at:
+
+* *Image reference:* {{/mnt/data/PNG image 2.png}}
+* *Figma metadata:* injected as {{FIGMA_METADATA}}
+
+You MUST follow the design exactly — spacing, typography, radii, colors, and layout.
+
+----
+
+h2. *RULES*
+
+h3. *1. Output files*
+
+You must output *exactly* the following files:
+
+{noformat}/app/home/page.tsx
+/components/input.tsx
+/components/card.tsx
+/components/kpi-badge.tsx
+/components/pill.tsx
+/components/icon-button.tsx
+/components/progress-bar.tsx
+/components/bottom-nav.tsx
+{noformat}
+
+h3. *2. page.tsx*
+
+This file MUST:
+
+* Assemble the entire screen
+* Use only components defined above
+* Match layout of the PNG and Figma structure
+* Follow spacing tokens
+* Render sections in this order:
+
+{noformat}HeaderSection
+KPIsSection
+SearchSection
+RecentlyViewedSection
+LatestNewsSection
+ApplicationsSummarySection
+CommissionsSection
+TabBar
+{noformat}
+
+h3. *3. Component rules*
+
+Each component must:
+
+* Be standalone
+* Use TailwindCSS (latest version)
+* Follow the tokens from metadata
+* Use existing primitives if available
+* Match the exact design in the provided PNG
+
+h3. *4. Absolutely NO deviations*
+
+The model may NOT:
+
+* Add new buttons
+* Add blue Confirm/Cancel buttons
+* Change layout
+* Change colors
+* Change spacing
+* Replace the bottom nav with something else
+* Replace KPI cards with generic cards
+* Replace the header style
+
+h3. *5. Accessibility*
+
+* All interactive elements must have ARIA labels
+* TabBar must follow accessible nav patterns
+* Cards with actions require {{role=button}}",
+  "figmaFileId": "049DL3s5yK6CdYuNygmHeX",
+}
