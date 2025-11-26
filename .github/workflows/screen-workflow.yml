@@ -78,23 +78,25 @@ jobs:
             "model": "claude-sonnet-4-20250514",
             "max_tokens": 4096,
             "temperature": 0.1,
-            "messages": [{
-              "role": "user",
-              "content": [
-                {
-                  "type": "image",
-                  "source": {
-                    "type": "base64",
-                    "media_type": "image/png",
-                    "data": "${BASE64_IMAGE}"
-                }
-              },
+            "messages": [
               {
+                "role": "user",
+                "content": [
+                  {
+                    "type": "image",
+                    "source": {
+                      "type": "base64",
+                      "media_type": "image/png",
+                      "data": "${BASE64_IMAGE}"
+                    }
+                  },
+                {
                 "type": "text",
                 "text": "Write a React TypeScript modal component for the following Jira description:\n${DESCRIPTION}\n\n Please reference the design shown in the image above."
               }
             ]
-          }]
+          }
+          ]
           }
           EOF
 
