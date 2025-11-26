@@ -103,8 +103,8 @@ jobs:
 
       - name: Create feature branch & PR
         run: |
-          ISSUE_KEY="${{ steps.extract.outputs.issue_key }}"
-          SUMMARY="${{ steps.extract.outputs.summary }}"
+          ISSUE_KEY="${{ github.event.client_payload.issueKey }}"
+          SUMMARY="${{ github.event.client_payload.summary }}"
           TIMESTAMP=$(date +%Y%m%d%H%M%S)
           BRANCH="feat/${ISSUE_KEY}-${TIMESTAMP}"
 
