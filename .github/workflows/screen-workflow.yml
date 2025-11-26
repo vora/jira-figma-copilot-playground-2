@@ -44,6 +44,9 @@ jobs:
           echo "Extracted Node ID: $JSON_NODE_ID"
           echo "Extracted Image URL: $IMAGE_URL"
     
+          curl -fL "$IMAGE_URL" -o screen.png
+          base64 screen.png > screen.png.base64
+
 
       - name: Create workspace payload
         id: payload
@@ -61,9 +64,9 @@ jobs:
         env:
           ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
         run: |
-          DESCRIPTION="${{ steps.extract.outputs.description }}"
+          DESCRIPTION="${{ github.event.client_payload.description }}"
     
-          BASE64_IMAGE=$(cat node.png.base64)
+          BASE64_IMAGE=$(cat screen.png.base64)
     
           cat > anthropic-request.json <<EOF
           {
