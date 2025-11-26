@@ -10,6 +10,8 @@ jobs:
     environment: figma-jam
     env:
       FIGMA_TOKEN: ${{ secrets.FIGMA_TOKEN }}
+      GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
     steps:
       - name: Use payload
         run: |
