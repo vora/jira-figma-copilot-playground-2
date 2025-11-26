@@ -44,16 +44,16 @@ jobs:
           echo "Extracted Node ID: $JSON_NODE_ID"
           echo "Extracted Image URL: $IMAGE_URL"
     
+
       - name: Create workspace payload
         id: payload
         run: |
           cat <<EOF > workspace-payload.json
           {
-            "issueKey": "${{ steps.extract.outputs.issue_key }}",
-            "summary": "${{ steps.extract.outputs.summary }}",
-            "description": "${{ steps.extract.outputs.description }}",
-            "figmaFileId": "${{ steps.figma.outputs.figma_file_id }}",
-            "figmaMetadata": ${{ steps.figma.outputs.figma_metadata }}
+            "issueKey": "${{ github.event.client_payload.issueKey  }}",
+            "summary": "${{ github.event.client_payload.summary }}",
+            "description": "${{ github.event.client_payload.description  }}",
+            "figmaFileId": "${{ github.event.client_payload.figma_file_id }}",
           }
           EOF
 
@@ -62,7 +62,6 @@ jobs:
           ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
         run: |
           DESCRIPTION="${{ steps.extract.outputs.description }}"
-          FIGMA_URL="${{ steps.extract.outputs.figma_url }}"
     
           BASE64_IMAGE=$(cat node.png.base64)
     
@@ -84,7 +83,7 @@ jobs:
               },
               {
                 "type": "text",
-                "text": "Write a React TypeScript modal component for the following Jira description:\n${DESCRIPTION}\n\nFigma link: ${FIGMA_URL}\n\nFigma metadata: ${FIGMA_METADATA}\n\nPlease reference the design shown in the image above."
+                "text": "Write a React TypeScript modal component for the following Jira description:\n${DESCRIPTION}\n\n Please reference the design shown in the image above."
               }
             ]
           }]
