@@ -44,4 +44,81 @@ jobs:
           echo "Extracted Node ID: $JSON_NODE_ID"
           echo "Extracted Image URL: $IMAGE_URL"
     
-     
+      - name: Create workspace payload
+        id: payload
+        run: |
+          cat <<EOF > workspace-payload.json
+          {
+            "issueKey": "${{ steps.extract.outputs.issue_key }}",
+            "summary": "${{ steps.extract.outputs.summary }}",
+            "description": "${{ steps.extract.outputs.description }}",
+            "figmaFileId": "${{ steps.figma.outputs.figma_file_id }}",
+            "figmaMetadata": ${{ steps.figma.outputs.figma_metadata }}
+          }
+          EOF
+
+      - name: Generate modal via Anthropic
+        env:
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+        run: |
+          DESCRIPTION="${{ steps.extract.outputs.description }}"
+          FIGMA_URL="${{ steps.extract.outputs.figma_url }}"
+    
+          BASE64_IMAGE=$(cat node.png.base64)
+    
+          cat > anthropic-request.json <<EOF
+          {
+            "model": "claude-sonnet-4-20250514",
+            "max_tokens": 4096,
+            "temperature": 0.1,
+            "messages": [{
+              "role": "user",
+              "content": [
+                {
+                  "type": "image",
+                  "source": {
+                    "type": "base64",
+                    "media_type": "image/png",
+                    "data": "${BASE64_IMAGE}"
+                }
+              },
+              {
+                "type": "text",
+                "text": "Write a React TypeScript modal component for the following Jira description:\n${DESCRIPTION}\n\nFigma link: ${FIGMA_URL}\n\nFigma metadata: ${FIGMA_METADATA}\n\nPlease reference the design shown in the image above."
+              }
+            ]
+          }]
+          }
+          EOF
+
+          RESPONSE=$(curl https://api.anthropic.com/v1/messages \
+            -H "Content-Type: application/json" \
+            -H "x-api-key: $ANTHROPIC_API_KEY" \
+            -H "anthropic-version: 2023-06-01" \
+            -d @anthropic-request.json)
+
+          
+
+      - name: Create feature branch & PR
+        run: |
+          ISSUE_KEY="${{ steps.extract.outputs.issue_key }}"
+          SUMMARY="${{ steps.extract.outputs.summary }}"
+          TIMESTAMP=$(date +%Y%m%d%H%M%S)
+          BRANCH="feat/${ISSUE_KEY}-${TIMESTAMP}"
+
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "github-actions[bot]@users.noreply.github.com"
+
+          git checkout -b "$BRANCH"
+          git add .
+          git commit -m "feat($ISSUE_KEY): generated feature from Copilot"
+          git push --set-upstream origin "$BRANCH"
+
+          PR_URL=$(gh pr create \
+            --title "Feature $ISSUE_KEY: $SUMMARY" \
+            --body "Auto-generated scaffold from Copilot for Jira issue $ISSUE_KEY" \
+            --base main)
+
+          PR_NUMBER=$(gh pr view "$BRANCH" --json number --jq '.number')
+          echo "pr_number=$PR_NUMBER" >> "$GITHUB_OUTPUT"
+          echo "PR Number: $PR_NUMBER"
