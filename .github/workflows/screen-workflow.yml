@@ -20,6 +20,9 @@ jobs:
           echo "FigmaNodeId: ${{ github.event.client_payload.figma_node_id }}"         
           echo "Description: ${{ github.event.client_payload.description }}"
 
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
 
 # using the figma images api. the node_id from the figma url is returned with a dash in the middle ex: '1111-2342'
 # the response that we get from the api looks like this for the image id
