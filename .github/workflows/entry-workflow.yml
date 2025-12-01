@@ -68,34 +68,33 @@ jobs:
             exit 0
           fi
 
-          echo "Dispatching $EVENT workflow..."
-
-          ISSUE_KEY="${{ steps.extract.outputs.issue_key }}"
-          SUMMARY="${{ steps.extract.outputs.summary }}"
-          DESCRIPTION="${{ steps.extract.outputs.description }}"
-          FIGMA_FILE_ID="${{ steps.extract.outputs.figma_file_id }}"
-          FIGMA_NODE_ID="${{ steps.extract.outputs.figma_node_id }}"
-          COMPONENT_NAME="${{ steps.extract.outputs.component_name }}"
-
-          payload=$(cat <<EOF
-          {
-            "event_type": "$EVENT",
-            "client_payload": {
-              "issueKey": "$ISSUE_KEY",
-              "summary": "$SUMMARY",
-              "description": "$DESCRIPTION",
-              "figma_file_id": "$FIGMA_FILE_ID",
-              "figma_node_id": "$FIGMA_NODE_ID",
-              "component_name": "$COMPONENT_NAME"
-            }
-          }
-          EOF
-          )
-          
-          curl -X POST https://api.github.com/repos/${{ github.repository }}/dispatches \
-          -H "Accept: application/vnd.github+json" \
-          -H "Authorization: Bearer $GITHUB_TOKEN" \
-          -d "$payload"
+          payload=$(jq -n \
+            --arg event "$EVENT" \
+            --arg issueKey "${{ steps.extract.outputs.issue_key }}" \
+            --arg summary "${{ steps.extract.outputs.summary }}" \
+            --arg description "${{ steps.extract.outputs.description }}" \
+            --arg figmaFileId "${{ steps.extract.outputs.figma_file_id }}" \
+            --arg figmaNodeId "${{ steps.extract.outputs.figma_node_id }}" \
+            --arg componentName "${{ steps.extract.outputs.component_name }}" \
+            '{
+              event_type: $event,
+              client_payload: {
+                issueKey: $issueKey,
+                summary: $summary,
+                description: $description,
+                figma_file_id: $figmaFileId,
+                figma_node_id: $figmaNodeId,
+                component_name: $componentName
+              }
+            }')
+            
+            echo "Payload:"
+            echo "$payload" | jq '.'
+            
+            curl -X POST https://api.github.com/repos/${{ github.repository }}/dispatches \
+              -H "Accept: application/vnd.github+json" \
+              -H "Authorization: Bearer $GITHUB_TOKEN" \
+              -d "$payload"
 
           
 
