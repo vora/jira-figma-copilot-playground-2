@@ -79,7 +79,7 @@ jobs:
               "description": "$description",
               "figma_file_id": "$figmaFileId",
               "figma_node_id": "$figmaNodeId",
-              "component_path": "$componentName"
+              "component_name": "$componentName"
             }
           }
           EOF

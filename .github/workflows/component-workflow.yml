@@ -5,7 +5,7 @@ on:
     types: [feature_component]
 
 jobs:
-  handle_screen:
+  handle_component:
     runs-on: ubuntu-latest
     environment: figma-jam
     env:
