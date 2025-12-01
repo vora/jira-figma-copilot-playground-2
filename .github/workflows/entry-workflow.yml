@@ -72,7 +72,7 @@ jobs:
 
           payload=$(cat <<EOF
           {
-            "event_type": "$event",
+            "event_type": "$EVENT",
             "client_payload": {
               "issueKey": "$issueKey",
               "summary": "$summary",
