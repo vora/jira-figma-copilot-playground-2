@@ -70,16 +70,23 @@ jobs:
 
           echo "Dispatching $EVENT workflow..."
 
+          ISSUE_KEY="${{ steps.extract.outputs.issue_key }}"
+          SUMMARY="${{ steps.extract.outputs.summary }}"
+          DESCRIPTION="${{ steps.extract.outputs.description }}"
+          FIGMA_FILE_ID="${{ steps.extract.outputs.figma_file_id }}"
+          FIGMA_NODE_ID="${{ steps.extract.outputs.figma_node_id }}"
+          COMPONENT_NAME="${{ steps.extract.outputs.component_name }}"
+
           payload=$(cat <<EOF
           {
             "event_type": "$EVENT",
             "client_payload": {
-              "issueKey": "$issueKey",
-              "summary": "$summary",
-              "description": "$description",
-              "figma_file_id": "$figmaFileId",
-              "figma_node_id": "$figmaNodeId",
-              "component_name": "$componentName"
+              "issueKey": "$ISSUE_KEY",
+              "summary": "$SUMMARY",
+              "description": "$DESCRIPTION",
+              "figma_file_id": "$FIGMA_FILE_ID",
+              "figma_node_id": "$FIGMA_NODE_ID",
+              "component_name": "$COMPONENT_NAME"
             }
           }
           EOF
