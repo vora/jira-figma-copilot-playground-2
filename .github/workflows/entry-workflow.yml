@@ -23,7 +23,6 @@ jobs:
         run: |
           echo "Webhook payload: $GITHUB_EVENT_PATH"
           cat "$GITHUB_EVENT_PATH"
-          # Optional: implement verification with JIRA_WEBHOOK_SECRET
 
       - name: Extract issue and Figma data
         id: extract
@@ -33,6 +32,7 @@ jobs:
           DESCRIPTION=$(jq -r .client_payload.description < "$GITHUB_EVENT_PATH")
           FIGMA_URL=$(jq -r .client_payload.figma_link < "$GITHUB_EVENT_PATH")
           JIRA_LABEL=$(jq -r .client_payload.label < "$GITHUB_EVENT_PATH")
+          COMPONDNT_NAME=$(jq -r .client_payload.component_path < "$GITHUB_EVENT_PATH")
 
           echo "issue_key=$ISSUE_KEY" >> $GITHUB_OUTPUT
 
@@ -46,6 +46,7 @@ jobs:
 
           echo "figma_url=$FIGMA_URL" >> $GITHUB_OUTPUT
           echo "jira_label=$JIRA_LABEL" >> $GITHUB_OUTPUT
+          echo "component_name=$COMPONDNT_NAME" >> $GITHUB_OUTPUT
 
           FILE_ID=$(echo "$FIGMA_URL" | grep -oP '(?<=design/|file/)[^/]+') || true
           NODE_ID=$(echo "$FIGMA_URL" | grep -oP '(?<=node-id=)[0-9:-]+') || true
@@ -80,12 +81,15 @@ jobs:
                 --arg description "${{ steps.extract.outputs.description }}" \
                 --arg figmaFileId "${{ steps.extract.outputs.figma_file_id }}" \
                 --arg figmaNodeId "${{ steps.extract.outputs.figma_node_id }}" \
+                --arg componentName "${{ steps.extract.outputs.component_name }}" \
+
                 '{event_type: $event, client_payload: {
                     issueKey: $issueKey,
                     summary: $summary,
                     description: $description,
                     figma_file_id: $figmaFileId,
                     figma_node_id: $figmaNodeId
+                    component_path: $componentName
                 }}')"
           # Optional: implement verification with JIRA_WEBHOOK_SECRET
 
