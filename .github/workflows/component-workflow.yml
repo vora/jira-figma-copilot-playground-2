@@ -54,10 +54,10 @@ jobs:
 
           echo "Extracted Node ID: $JSON_NODE_ID"
           echo "Extracted Image URL: $IMAGE_URL"
-          mkdir -p /src/figma/components
+          mkdir -p /figma/components
 
           curl -fL "$IMAGE_URL" -o /src/figma/components/${COMPONENT_NAME}.png
-          IMAGE_PATH="src/figma/components/${COMPONENT_NAME}.png"
+          IMAGE_PATH="/figma/components/${COMPONENT_NAME}.png"
           BASE64_IMAGE=$(base64 "$IMAGE_PATH")
 
     
