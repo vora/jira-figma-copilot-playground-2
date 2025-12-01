@@ -70,28 +70,27 @@ jobs:
 
           echo "Dispatching $EVENT workflow..."
 
-          curl -X POST \
-            -H "Accept: application/vnd.github+json" \
-            -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" \
-            https://api.github.com/repos/${{ github.repository }}/dispatches \
-            -d "$(jq -n \
-                --arg event "$EVENT" \
-                --arg issueKey "${{ steps.extract.outputs.issue_key }}" \
-                --arg summary "${{ steps.extract.outputs.summary }}" \
-                --arg description "${{ steps.extract.outputs.description }}" \
-                --arg figmaFileId "${{ steps.extract.outputs.figma_file_id }}" \
-                --arg figmaNodeId "${{ steps.extract.outputs.figma_node_id }}" \
-                --arg componentName "${{ steps.extract.outputs.component_name }}" \
+          payload=$(cat <<EOF
+          {
+            "event_type": "$event",
+            "client_payload": {
+              "issueKey": "$issueKey",
+              "summary": "$summary",
+              "description": "$description",
+              "figma_file_id": "$figmaFileId",
+              "figma_node_id": "$figmaNodeId",
+              "component_path": "$componentName"
+            }
+          }
+          EOF
+          )
+          
+          curl -X POST https://api.github.com/repos/${{ github.repository }}/dispatches \
+          -H "Accept: application/vnd.github+json" \
+          -H "Authorization: Bearer $GITHUB_TOKEN" \
+          -d "$payload"
 
-                '{event_type: $event, client_payload: {
-                    issueKey: $issueKey,
-                    summary: $summary,
-                    description: $description,
-                    figma_file_id: $figmaFileId,
-                    figma_node_id: $figmaNodeId,
-                    component_path: $componentName
-                }}')"
-          # Optional: implement verification with JIRA_WEBHOOK_SECRET
+          
 
       # - name: Extract issue and Figma data
       #   id: extract
