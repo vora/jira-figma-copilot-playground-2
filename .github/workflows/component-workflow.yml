@@ -161,6 +161,16 @@ jobs:
 
           echo "✔ Generated $FILE_PATH"
 
+      - name: Clean up base64 file
+        run: |
+          BASE64_PATH="${{ steps.figmapng.outputs.base64_path }}"
+          if [ -f "$BASE64_PATH" ]; then
+            echo "Deleting $BASE64_PATH"
+            rm "$BASE64_PATH"
+          else
+            echo "Base64 file not found: $BASE64_PATH"
+          fi
+
           
 
       - name: Create feature branch & PR
