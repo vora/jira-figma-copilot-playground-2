@@ -1,0 +1,78 @@
+{
+  "model": "claude-sonnet-4-20250514",
+  "max_tokens": 8192,
+  "temperature": 0.1,
+  "messages": [
+    {
+      "role": "user",
+      "content": [
+        {
+          "type": "image",
+          "source": {
+            "type": "base64",
+            "media_type": "image/png",
+            "data": ""
+          }
+        },
+        {
+          "type": "text",
+          "text": "Generate a single React TypeScript file as JSON:\n\n{
+            \"path\": \"components/.tsx\",
+            \"content\": \"...\"
+          }\n\nJira description:\nYou are generating a card component using the Broker App White Label design system.
+You MUST adhere to the Figma metadata and PNG reference located at:
+
+You MUST follow the design exactly — spacing, typography, radii, colors, and layout.
+
+----
+
+h2. *RULES*
+
+h3. *1. Output files*
+
+/components/card.tsx
+
+You must output *exactly* the following files:
+
+h3. *2. page.tsx*
+
+This file MUST:
+
+* Use only components defined above
+* Match layout of the PNG and Figma structure
+* Follow spacing tokens
+* 
+
+h3. *3. Component rules*
+
+Each component must:
+
+* Be standalone
+* Use TailwindCSS (latest version)
+* Follow the tokens from metadata
+* Use existing primitives if available
+* Match the exact design in the provided PNG
+
+h3. *4. Absolutely NO deviations*
+
+The model may NOT:
+
+* Add new buttons
+* Add blue Confirm/Cancel buttons
+* Change layout
+* Change colors
+* Change spacing
+* Replace the bottom nav with something else
+* Replace KPI cards with generic cards
+* Replace the header style
+
+h3. *5. Accessibility*
+
+* All interactive elements must have ARIA labels
+* TabBar must follow accessible nav patterns
+* Cards with actions require {{role=button}}\n\nFigma link: \n\nFigma metadata:\n\n\nFollow the UI in the attached image. DO NOT output raw code blocks. Return ONLY a JSON object with top-level keys 'path' and 'content'."
+        }
+      ]
+    }
+  ]
+}
