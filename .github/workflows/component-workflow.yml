@@ -81,8 +81,7 @@ jobs:
         run: |
           DESCRIPTION="${{ github.event.client_payload.description }}"
 
-    
-          # Create anthropic-request.json
+          # Build anthropic-request.json
           cat > anthropic-request.json <<EOF
           {
             "model": "claude-sonnet-4-20250514",
@@ -92,23 +91,20 @@ jobs:
               {
                 "role": "user",
                 "content": [
-              {
-                "type": "image",
-                "source": {
-                  "type": "base64",
-                  "media_type": "image/png",
-                  "data": "${BASE64_IMAGE}"
-              }
-            },
-            {
-                "type": "text",
-                "text": "Generate all required React TypeScript files as JSON:\n\n{
-                  \"files\": [
-                    { \"path\": \"app/home/page.tsx\", \"content\": \"...\" },
-                    { \"path\": \"components/card.tsx\", \"content\": \"...\" },
-                    { \"path\": \"components/input.tsx\", \"content\": \"...\" }
-                  ]
-            }\n\nJira description:\n${DESCRIPTION}\n\nFigma link: ${FIGMA_URL}\n\nFigma metadata:\n${FIGMA_METADATA}\n\nFollow the design shown in the attached image. DO NOT return raw code—return ONLY a JSON object with a top-level 'files' array."
+                  {
+                    "type": "image",
+                    "source": {
+                      "type": "base64",
+                      "media_type": "image/png",
+                      "data": "${BASE64_IMAGE}"
+                    }
+                  },
+                  {
+                    "type": "text",
+                    "text": "Generate a single React TypeScript file as JSON:\n\n{
+                      \"path\": \"components/${COMPONENT_NAME}.tsx\",
+                      \"content\": \"...\"
+                    }\n\nJira description:\n${DESCRIPTION}\n\nFigma link: ${FIGMA_URL}\n\nFigma metadata:\n${FIGMA_METADATA}\n\nFollow the UI in the attached image. DO NOT output raw code blocks. Return ONLY a JSON object with top-level keys 'path' and 'content'."
                   }
                 ]
               }
@@ -116,37 +112,37 @@ jobs:
           }
           EOF
 
-         
+          # Call Anthropic
           RESPONSE=$(curl https://api.anthropic.com/v1/messages \
             -H "Content-Type: application/json" \
             -H "x-api-key: $ANTHROPIC_API_KEY" \
             -H "anthropic-version: 2023-06-01" \
             -d @anthropic-request.json)
-          
+
+          # Extract the text part
           TEXT_CONTENT=$(echo "$RESPONSE" | jq -r '.content[0].text')
 
+          # Remove ```json ``` wrappers if Anthropic added them
           RAW_JSON_CLEANED=$(echo "$TEXT_CONTENT" \
             | sed -e 's/^[[:space:]]*```json[[:space:]]*//g' \
-            -e 's/^[[:space:]]*```[[:space:]]*//g' \
-            -e 's/[[:space:]]*```[[:space:]]*$//g')
+                  -e 's/^[[:space:]]*```[[:space:]]*//g' \
+                  -e 's/[[:space:]]*```[[:space:]]*$//g')
 
           echo "--- RAW_JSON_CLEANED for Debugging ---"
-          echo "$RAW_JSON_CLEANED" 
-          echo "----------------------------"
+          echo "$RAW_JSON_CLEANED"
+          echo "--------------------------------------"
 
-  
-          echo "$RAW_JSON_CLEANED" \
-            | jq -c '.files[]' \
-            | while read -r file; do
-              FILE_PATH=$(echo "$file" | jq -r '.path')
-              FILE_CONTENT=$(echo "$file" | jq -r '.content')
-  
-              mkdir -p "$(dirname "$FILE_PATH")"
-  
-              echo "$FILE_CONTENT" > "$FILE_PATH"
-  
-              echo "✔ Generated $FILE_PATH"
-          done
+          # Parse the simple JSON: { "path": "...", "content": "..." }
+          FILE_PATH=$(echo "$RAW_JSON_CLEANED" | jq -r '.path')
+          FILE_CONTENT=$(echo "$RAW_JSON_CLEANED" | jq -r '.content')
+
+          # Ensure directory exists
+          mkdir -p "$(dirname "$FILE_PATH")"
+
+          # Write the file
+          echo "$FILE_CONTENT" > "$FILE_PATH"
+
+          echo "✔ Generated $FILE_PATH"
 
           
 
