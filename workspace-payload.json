@@ -1,25 +1,46 @@
 {
-  "issueKey": "PLAYG-10",
-  "summary": "Commissions Component",
-  "description": "You are generating a commissions component using the Broker App White Label design system.
-You MUST adhere to the Figma metadata and PNG reference located at:
-You MUST follow the design exactly — spacing, typography, radii, colors, and layout *RULES*
+  "issueKey": "PLAYG-3",
+  "summary": "trying to make a entire screen",
+  "description": "You are generating a full screen using the Broker App White Label design system.
 
-# *Output files*
-/components/commissions.tsx
+You MUST follow the design exactly — spacing, typography, radii, colors, and layout.
+You MUST use only components that appear in COMPONENT_FILES.
+You MUST NOT create new components unless explicitly listed.
+You MUST NOT modify existing component APIs.
+
+----
+
+h2. *RULES*
+
+h3. *1. Output files*
+
 You must output *exactly* the following files:
-# *page.tsx*
+
+{noformat}/app/home/page.tsx
+
+{noformat}
+
+h3. *2. page.tsx*
 
 This file MUST:
 
+* Assemble the entire screen
 * Use only components defined above
 * Match layout of the PNG and Figma structure
 * Follow spacing tokens
-* Monthly increase bar can be done with raw tailwind
+* Render sections in this order:
 
-# *Component rules*
+{noformat}Notification
+Search
+Client card
+card
+MarkSegmentCard
+Commission
+Bottom Nav
 
-Each component must:
+{noformat}
+
+h3. *3. Component rules*
 
 * Be standalone
 * Use TailwindCSS (latest version)
@@ -27,8 +48,7 @@ Each component must:
 * Use existing primitives if available
 * Match the exact design in the provided PNG
 
-# *Absolutely NO deviations*
-
+h3. *4. Absolutely NO deviations*
 
 The model may NOT:
 
@@ -41,10 +61,10 @@ The model may NOT:
 * Replace KPI cards with generic cards
 * Replace the header style
 
-# *Accessibility*
+h3. *5. Accessibility*
 
 * All interactive elements must have ARIA labels
 * TabBar must follow accessible nav patterns
-* Cards with actions require role=button",
+* Cards with actions require {{role=button}}",
   "figmaFileId": "049DL3s5yK6CdYuNygmHeX",
 }
