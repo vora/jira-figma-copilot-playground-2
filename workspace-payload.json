@@ -1,0 +1,57 @@
+{
+  "issueKey": "PLAYG-5",
+  "summary": "News Title Component",
+  "description": "You are generating a news title ccomponent using the Broker App White Label design system.
+You MUST adhere to the Figma metadata and PNG reference located at:
+
+You MUST follow the design exactly — spacing, typography, radii, colors, and layout.
+
+----
+
+h2. *RULES*
+
+h3. *1. Output files*
+
+/components/newsTitle.tsx
+
+You must output *exactly* the following files:
+
+h3. *2. page.tsx*
+
+This file MUST:
+
+* Use only components defined above
+* Match layout of the PNG and Figma structure
+* Follow spacing tokens
+* 
+
+h3. *3. Component rules*
+
+Each component must:
+
+* Be standalone
+* Use TailwindCSS (latest version)
+* Follow the tokens from metadata
+* Use existing primitives if available
+* Match the exact design in the provided PNG
+
+h3. *4. Absolutely NO deviations*
+
+The model may NOT:
+
+* Add new buttons
+* Add blue Confirm/Cancel buttons
+* Change layout
+* Change colors
+* Change spacing
+* Replace the bottom nav with something else
+* Replace KPI cards with generic cards
+* Replace the header style
+
+h3. *5. Accessibility*
+
+* All interactive elements must have ARIA labels
+* TabBar must follow accessible nav patterns
+* Cards with actions require {{role=button}}",
+  "figmaFileId": "049DL3s5yK6CdYuNygmHeX",
+}
