@@ -3,20 +3,19 @@
   "summary": "Client Card Component",
   "description": "You are generating a client card component using the Broker App White Label design system.
 You MUST adhere to the Figma metadata and PNG reference located at:
-
 You MUST follow the design exactly — spacing, typography, radii, colors, and layout.
 
-----
+*RULES*
 
-h2. *RULES*
-
-h3. *1. Output files*
+# *Output files*
 
 /components/clientCard.tsx
 
+/components/bottomNav.tsx
 You must output *exactly* the following files:
 
-h3. *2. page.tsx*
+# *page.tsx*
+
 
 This file MUST:
 
@@ -28,7 +27,6 @@ This file MUST:
 * Create Vertical Ellipsis in the right hand corner
 * Vertical Ellipsis should allow user to delete client
 
-h3. *3. Component rules*
 
 Each component must:
 
@@ -38,7 +36,8 @@ Each component must:
 * Use existing primitives if available
 * Match the exact design in the provided PNG
 
-h3. *4. Absolutely NO deviations*
+# *Absolutely NO deviations*
+
 
 The model may NOT:
 
@@ -51,10 +50,10 @@ The model may NOT:
 * Replace KPI cards with generic cards
 * Replace the header style
 
-h3. *5. Accessibility*
+# *Accessibility*
 
 * All interactive elements must have ARIA labels
 * TabBar must follow accessible nav patterns
-* Cards with actions require {{role=button}}",
+* Cards with actions require role=button",
   "figmaFileId": "049DL3s5yK6CdYuNygmHeX",
 }

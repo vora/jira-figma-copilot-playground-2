@@ -102,20 +102,19 @@ p76lZdPody16ntbV+FkzikD8H78eLRe7sM+OAAAAAElFTkSuQmCC"
           "type": "text",
           "text": "Generate a single React TypeScript file as JSON:\n\n{\n  \"path\": \"components/.tsx\",\n  \"content\": \"...\"\n}\n\nJira description:\nYou are generating a client card component using the Broker App White Label design system.
 You MUST adhere to the Figma metadata and PNG reference located at:
-
 You MUST follow the design exactly — spacing, typography, radii, colors, and layout.
 
-----
+*RULES*
 
-h2. *RULES*
-
-h3. *1. Output files*
+# *Output files*
 
 /components/clientCard.tsx
 
+/components/bottomNav.tsx
 You must output *exactly* the following files:
 
-h3. *2. page.tsx*
+# *page.tsx*
+
 
 This file MUST:
 
@@ -127,7 +126,6 @@ This file MUST:
 * Create Vertical Ellipsis in the right hand corner
 * Vertical Ellipsis should allow user to delete client
 
-h3. *3. Component rules*
 
 Each component must:
 
@@ -137,7 +135,8 @@ Each component must:
 * Use existing primitives if available
 * Match the exact design in the provided PNG
 
-h3. *4. Absolutely NO deviations*
+# *Absolutely NO deviations*
+
 
 The model may NOT:
 
@@ -150,11 +149,11 @@ The model may NOT:
 * Replace KPI cards with generic cards
 * Replace the header style
 
-h3. *5. Accessibility*
+# *Accessibility*
 
 * All interactive elements must have ARIA labels
 * TabBar must follow accessible nav patterns
-* Cards with actions require {{role=button}}\n\nFigma link: \n\nFollow the UI in the attached image. DO NOT output raw code blocks. Return ONLY a JSON object with top-level keys 'path' and 'content'."
+* Cards with actions require role=button\n\nFigma link: \n\nFollow the UI in the attached image. DO NOT output raw code blocks. Return ONLY a JSON object with top-level keys 'path' and 'content'."
         }
       ]
     }
