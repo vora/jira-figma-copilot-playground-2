@@ -1,31 +1,31 @@
 {
-  "issueKey": "PLAYG-6",
-  "summary": "Notification Component",
-  "description": "You are generating a news title ccomponent using the Broker App White Label design system.
+  "issueKey": "PLAYG-11",
+  "summary": "Bottom Nav Component",
+  "description": "You are generating a Bottom Nav component using the Broker App White Label design system.
 You MUST adhere to the Figma metadata and PNG reference located at:
-
 You MUST follow the design exactly — spacing, typography, radii, colors, and layout.
 
-----
+*RULES*
 
-h2. *RULES*
+# *Output files*
 
-h3. *1. Output files*
 
-/components/newsTitle.tsx
-
+/components/bottomNav.tsx
 You must output *exactly* the following files:
 
-h3. *2. page.tsx*
+# *page.tsx*
+
 
 This file MUST:
 
 * Use only components defined above
 * Match layout of the PNG and Figma structure
 * Follow spacing tokens
-* 
+* Create a title for client name
+* use lucide icons when needed
 
-h3. *3. Component rules*
+# *Component rules*
+
 
 Each component must:
 
@@ -35,7 +35,8 @@ Each component must:
 * Use existing primitives if available
 * Match the exact design in the provided PNG
 
-h3. *4. Absolutely NO deviations*
+# *Absolutely NO deviations*
+
 
 The model may NOT:
 
@@ -48,10 +49,10 @@ The model may NOT:
 * Replace KPI cards with generic cards
 * Replace the header style
 
-h3. *5. Accessibility*
+# *Accessibility*
 
 * All interactive elements must have ARIA labels
 * TabBar must follow accessible nav patterns
-* Cards with actions require {{role=button}}",
+* Cards with actions require role=button",
   "figmaFileId": "049DL3s5yK6CdYuNygmHeX",
 }
