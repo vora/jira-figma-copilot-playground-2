@@ -1,32 +1,23 @@
 {
-  "issueKey": "PLAYG-7",
-  "summary": "Client Card Component",
-  "description": "You are generating a client card component using the Broker App White Label design system.
+  "issueKey": "PLAYG-10",
+  "summary": "Commissions Component",
+  "description": "You are generating a commissions component using the Broker App White Label design system.
 You MUST adhere to the Figma metadata and PNG reference located at:
-You MUST follow the design exactly — spacing, typography, radii, colors, and layout.
-
-*RULES*
+You MUST follow the design exactly — spacing, typography, radii, colors, and layout *RULES*
 
 # *Output files*
-
-/components/clientCard.tsx
-
-/components/bottomNav.tsx
+/components/commissions.tsx
 You must output *exactly* the following files:
-
 # *page.tsx*
-
 
 This file MUST:
 
 * Use only components defined above
 * Match layout of the PNG and Figma structure
 * Follow spacing tokens
-* Create a title for client name
-* Create client ID 
-* Create Vertical Ellipsis in the right hand corner
-* Vertical Ellipsis should allow user to delete client
+* Monthly increase bar can be done with raw tailwind
 
+# *Component rules*
 
 Each component must:
 
