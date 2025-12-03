@@ -65,20 +65,23 @@ jobs:
       - name: Collect component files
         id: components
         run: |
-          mkdir -p tmp/components
+          COMPONENT_JSON="["
 
-          # Collect all component .tsx files
-          find components -name "*.tsx" -print0 | while IFS= read -r -d '' file; do
+          find components -maxdepth 1 -type f -name "*.tsx" -print0 | while IFS= read -r -d '' file; do
             CONTENT=$(sed 's/"/\\"/g' "$file")
-            echo "{\"filename\": \"$file\", \"content\": \"$CONTENT\"}," >> tmp/components/files.jsonl
+            COMPONENT_JSON="${COMPONENT_JSON}{
+              \"filename\": \"${file}\",
+              \"content\": \"${CONTENT}\"
+            },"
           done
 
-          # Wrap as proper JSON array
-          echo "[" > components.json
-          sed '$ s/,$//' tmp/components/files.jsonl >> components.json
-          echo "]" >> components.json
+          COMPONENT_JSON="${COMPONENT_JSON%,}]"
 
-          echo "components_json=$(cat components.json)" >> $GITHUB_OUTPUT
+          {
+            echo 'components_json<<EOF'
+            echo "$COMPONENT_JSON"
+            echo 'EOF'
+          } >> "$GITHUB_OUTPUT"
 
 
 
