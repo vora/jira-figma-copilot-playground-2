@@ -1,7 +1,7 @@
 {
-  "issueKey": "PLAYG-6",
-  "summary": "Notification Component",
-  "description": "You are generating a news title ccomponent using the Broker App White Label design system.
+  "issueKey": "PLAYG-8",
+  "summary": "Search Input",
+  "description": "You are generating a search input component using the Broker App White Label design system.
 You MUST adhere to the Figma metadata and PNG reference located at:
 
 You MUST follow the design exactly — spacing, typography, radii, colors, and layout.
@@ -12,7 +12,7 @@ h2. *RULES*
 
 h3. *1. Output files*
 
-/components/newsTitle.tsx
+/components/search.tsx
 
 You must output *exactly* the following files:
 
@@ -23,7 +23,8 @@ This file MUST:
 * Use only components defined above
 * Match layout of the PNG and Figma structure
 * Follow spacing tokens
-* 
+* placeholder will say “Search for client”
+* there should be a magnifying glass to the left of the placeholder
 
 h3. *3. Component rules*
 
