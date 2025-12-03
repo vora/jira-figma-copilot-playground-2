@@ -15,7 +15,7 @@ jobs:
     steps:
       - name: Use payload
         run: |
-          echo "Processing screen:"
+          echo "Processing component:"
           echo "Issue: ${{ github.event.client_payload.issueKey }}"
           echo "Summary: ${{ github.event.client_payload.summary }}"
           echo "FigmaFileId: ${{ github.event.client_payload.figma_file_id }}"

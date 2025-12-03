@@ -36,8 +36,10 @@ jobs:
         run: |
           FIGMA_FILE_ID="${{ github.event.client_payload.figma_file_id }}"
           FIGMA_NODE_ID="${{ github.event.client_payload.figma_node_id }}"
+          COMPONENT_NAME="${{ github.event.client_payload.component_name }}"
+
           curl -s -H "X-Figma-Token: $FIGMA_TOKEN" \
-            "https://api.figma.com/v1/files/$FILE_ID/nodes?ids=$NODE_ID" \
+            "https://api.figma.com/v1/images/$FIGMA_FILE_ID?ids=$FIGMA_NODE_ID" \
             -o figma-imagedata.json
     
           echo "=== Figma API Response ==="
