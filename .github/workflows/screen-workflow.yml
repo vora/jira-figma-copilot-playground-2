@@ -112,8 +112,7 @@ jobs:
           BASE64_IMAGE=$(cat "$BASE64_PATH")
           COMPONENT_JSON=$(cat "$COMPONENT_PATH")
 
-          echo "BASE64_PATH is: '$BASE64_PATH'"
-          echo "COMPONENT_PATH is: '$COMPONENT_PATH'"
+          
 
           
 
