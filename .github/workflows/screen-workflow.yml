@@ -158,6 +158,27 @@ jobs:
           echo "=== Anthropic Response ==="
           echo "$RESPONSE" | jq .
 
+
+      - name: Write generated screen file
+        id: writefile
+        run: |
+          # Save Anthropic response
+          echo '${RESPONSE}' > anthropic-response.json
+
+          # Extract path + content
+          FILE_PATH=$(jq -r '.content[0].text | fromjson | .path' anthropic-response.json)
+          FILE_CONTENT=$(jq -r '.content[0].text | fromjson | .content' anthropic-response.json)
+
+          echo "Generated path: $FILE_PATH"
+
+          # Ensure directory exists
+          mkdir -p "$(dirname "$FILE_PATH")"
+
+          # Write the file
+          echo "$FILE_CONTENT" > "$FILE_PATH"
+
+          echo "created_file=$FILE_PATH" >> $GITHUB_OUTPUT
+
           
 
       - name: Create feature branch & PR
