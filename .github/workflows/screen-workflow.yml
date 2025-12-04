@@ -78,8 +78,7 @@ jobs:
          done < <(find components -maxdepth 1 -type f -name "*.tsx" -print0)
 
          COMPONENT_JSON="${COMPONENT_JSON%,}]"
-         echo "componentJson=$COMPONENT_JSON" >> $GITHUB_OUTPUT
-
+         echo "componentsJson=$COMPONENT_JSON" >> $GITHUB_OUTPUT
 
 
 
@@ -103,10 +102,8 @@ jobs:
         run: |
           DESCRIPTION="${{ github.event.client_payload.description }}"
           BASE64_PATH="${{ steps.figmapng.outputs.base64_path }}"
-          COMPONENT_JSON="${{steps.components.outputs.componentJson}}"
           BASE64_IMAGE=$(cat "$BASE64_PATH")
 
-        
 
           cat > anthropic-request.json <<EOF
           {
