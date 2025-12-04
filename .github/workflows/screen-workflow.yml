@@ -1,3 +1,188 @@
+# name: Screen Workflow
+
+# on:
+#   repository_dispatch:
+#     types: [feature_screen]
+
+# jobs:
+#   handle_screen:
+#     runs-on: ubuntu-latest
+#     environment: figma-jam
+#     env:
+#       FIGMA_TOKEN: ${{ secrets.FIGMA_TOKEN }}
+#       GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+#     steps:
+#       - name: Use payload
+#         run: |
+#           echo "Processing screen:"
+#           echo "Issue: ${{ github.event.client_payload.issueKey }}"
+#           echo "Summary: ${{ github.event.client_payload.summary }}"
+#           echo "FigmaFileId: ${{ github.event.client_payload.figma_file_id }}"
+#           echo "FigmaNodeId: ${{ github.event.client_payload.figma_node_id }}"         
+#           echo "Description: ${{ github.event.client_payload.description }}"
+#           echo "ComponentName: ${{ github.event.client_payload.component_name }}"
+
+#       - name: Checkout repository
+#         uses: actions/checkout@v4
+
+
+# # using the figma images api. the node_id from the figma url is returned with a dash in the middle ex: '1111-2342'
+# # the response that we get from the api looks like this for the image id
+# # {"err":null,"images":{"1748:1672":"https://figma-alpha-api.s3.us-west-2.amazonaws.com/images/19b7386b-edd5-4bb9-8443-64f50a446c3b"}}
+# # So if we are planning on putting the 
+#       - name: Fetch Figma Png and save to file
+#         id: figmapng
+#         run: |
+#           FIGMA_FILE_ID="${{ github.event.client_payload.figma_file_id }}"
+#           FIGMA_NODE_ID="${{ github.event.client_payload.figma_node_id }}"
+#           COMPONENT_NAME="${{ github.event.client_payload.component_name }}"
+
+#           curl -s -H "X-Figma-Token: $FIGMA_TOKEN" \
+#             "https://api.figma.com/v1/images/$FIGMA_FILE_ID?ids=$FIGMA_NODE_ID" \
+#             -o figma-imagedata.json
+    
+#           echo "=== Figma API Response ==="
+#           cat figma-imagedata.json
+#           echo ""
+    
+#           JSON_NODE_ID=$(jq -r '.images | keys[0]' figma-imagedata.json)
+#           IMAGE_URL=$(jq -r ".images[\"$JSON_NODE_ID\"]" figma-imagedata.json)
+
+#           echo "Extracted Node ID: $JSON_NODE_ID"
+#           echo "Extracted Image URL: $IMAGE_URL"
+#           mkdir -p figma/components
+
+#           curl -fL "$IMAGE_URL" -o figma/components/${COMPONENT_NAME}.png
+#           IMAGE_PATH="figma/components/${COMPONENT_NAME}.png"
+#           BASE64_PATH="figma/components/${COMPONENT_NAME}.b64"
+#           base64 "figma/components/${COMPONENT_NAME}.png" > "$BASE64_PATH"
+
+
+#           echo "base64_path=$BASE64_PATH" >> $GITHUB_OUTPUT
+
+
+#       - name: Collect component files
+#         id: components
+#         run: |
+#          COMPONENT_JSON="["
+
+#          while IFS= read -r -d '' file; do
+#           FILENAME=$(basename "$file")
+#           CONTENT=$(jq -Rs . < "$file")
+
+#           COMPONENT_JSON="${COMPONENT_JSON}{
+#             \"filename\": \"${FILENAME}\",
+#             \"content\": ${CONTENT}
+#           },"
+#          done < <(find components -maxdepth 1 -type f -name "*.tsx" -print0)
+
+#          COMPONENT_JSON="${COMPONENT_JSON%,}]"
+
+
+
+
+#       - name: Create workspace payload
+#         id: payload
+#         run: |
+#           cat <<EOF > workspace-payload.json
+#           {
+#             "issueKey": "${{ github.event.client_payload.issueKey  }}",
+#             "summary": "${{ github.event.client_payload.summary }}",
+#             "description": "${{ github.event.client_payload.description  }}",
+#             "figmaFileId": "${{ github.event.client_payload.figma_file_id }}",
+#           }
+#           EOF
+
+#       - name: Generate screen via Anthropic
+#         env:
+#           ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+#         run: |
+#           DESCRIPTION="${{ github.event.client_payload.description }}"
+#           BASE64_PATH="${{ steps.figmapng.outputs.base64_path }}"
+#           BASE64_IMAGE=$(cat "$BASE64_PATH")
+
+#           COMPONENT_JSON="["
+
+#           while IFS= read -r -d '' file; do
+#             FILENAME=$(basename "$file")
+#             CONTENT=$(sed 's/"/\\"/g' "$file")
+
+#             COMPONENT_JSON="${COMPONENT_JSON}{
+#               \"filename\": \"${FILENAME}\",
+#               \"content\": \"${CONTENT}\"
+#             },"
+#           done < <(find components -maxdepth 1 -type f -name "*.tsx" -print0)
+
+#           COMPONENT_JSON="${COMPONENT_JSON%,}]"
+
+#           cat > anthropic-request.json <<EOF
+#           {
+#             "model": "claude-sonnet-4-20250514",
+#             "max_tokens": 8192,
+#             "temperature": 0.1,
+#             "messages": [
+#               {
+#                 "role": "user",
+#                 "content": [
+#                   {
+#                     "type": "text",
+#                     "text": "Here are the existing components you must use:\n\nCOMPONENT_FILES:\n${COMPONENT_JSON}\n\nUse ONLY these components."
+#                   },
+#                   {
+#                     "type": "image",
+#                     "source": {
+#                       "type": "base64",
+#                       "media_type": "image/png",
+#                       "data": "${BASE64_IMAGE}"
+#                     }
+#                   },
+#                   {
+#                     "type": "text",
+#                     "text": "Now generate the screen following these rules:\n\n${DESCRIPTION}"
+#                   }
+#                 ]
+#               }
+#             ]
+#           }
+#           EOF
+
+#             RESPONSE=$(curl https://api.anthropic.com/v1/messages \
+#               -H "Content-Type: application/json" \
+#               -H "x-api-key: $ANTHROPIC_API_KEY" \
+#               -H "anthropic-version: 2023-06-01" \
+#               -d @anthropic-request.json)
+
+#             echo "=== Anthropic Response ==="
+#             echo "$RESPONSE" | jq .
+
+          
+
+#       - name: Create feature branch & PR
+#         run: |
+#           ISSUE_KEY="${{ github.event.client_payload.issueKey }}"
+#           SUMMARY="${{ github.event.client_payload.summary }}"
+#           TIMESTAMP=$(date +%Y%m%d%H%M%S)
+#           BRANCH="feat/${ISSUE_KEY}-${TIMESTAMP}"
+
+#           git config --global user.name "github-actions[bot]"
+#           git config --global user.email "github-actions[bot]@users.noreply.github.com"
+
+#           git checkout -b "$BRANCH"
+#           git add .
+#           git commit -m "feat($ISSUE_KEY): generated feature from Copilot"
+#           git push --set-upstream origin "$BRANCH"
+
+#           PR_URL=$(gh pr create \
+#             --title "Feature $ISSUE_KEY: $SUMMARY" \
+#             --body "Auto-generated scaffold from Copilot for Jira issue $ISSUE_KEY" \
+#             --base main)
+
+#           PR_NUMBER=$(gh pr view "$BRANCH" --json number --jq '.number')
+#           echo "pr_number=$PR_NUMBER" >> "$GITHUB_OUTPUT"
+#           echo "PR Number: $PR_NUMBER"
+
+
 name: Screen Workflow
 
 on:
@@ -8,6 +193,7 @@ jobs:
   handle_screen:
     runs-on: ubuntu-latest
     environment: figma-jam
+
     env:
       FIGMA_TOKEN: ${{ secrets.FIGMA_TOKEN }}
       GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -19,145 +205,125 @@ jobs:
           echo "Issue: ${{ github.event.client_payload.issueKey }}"
           echo "Summary: ${{ github.event.client_payload.summary }}"
           echo "FigmaFileId: ${{ github.event.client_payload.figma_file_id }}"
-          echo "FigmaNodeId: ${{ github.event.client_payload.figma_node_id }}"         
+          echo "FigmaNodeId: ${{ github.event.client_payload.figma_node_id }}"
           echo "Description: ${{ github.event.client_payload.description }}"
           echo "ComponentName: ${{ github.event.client_payload.component_name }}"
 
       - name: Checkout repository
         uses: actions/checkout@v4
 
-
-# using the figma images api. the node_id from the figma url is returned with a dash in the middle ex: '1111-2342'
-# the response that we get from the api looks like this for the image id
-# {"err":null,"images":{"1748:1672":"https://figma-alpha-api.s3.us-west-2.amazonaws.com/images/19b7386b-edd5-4bb9-8443-64f50a446c3b"}}
-# So if we are planning on putting the 
-      - name: Fetch Figma Png and save to file
+      ###################################################################
+      # FETCH FIGMA IMAGE + BASE64
+      ###################################################################
+      - name: Fetch Figma PNG
         id: figmapng
         run: |
-          FIGMA_FILE_ID="${{ github.event.client_payload.figma_file_id }}"
-          FIGMA_NODE_ID="${{ github.event.client_payload.figma_node_id }}"
+          FILE_ID="${{ github.event.client_payload.figma_file_id }}"
+          NODE_ID="${{ github.event.client_payload.figma_node_id }}"
           COMPONENT_NAME="${{ github.event.client_payload.component_name }}"
 
           curl -s -H "X-Figma-Token: $FIGMA_TOKEN" \
-            "https://api.figma.com/v1/images/$FIGMA_FILE_ID?ids=$FIGMA_NODE_ID" \
+            "https://api.figma.com/v1/images/$FILE_ID?ids=$NODE_ID" \
             -o figma-imagedata.json
-    
+
           echo "=== Figma API Response ==="
           cat figma-imagedata.json
           echo ""
-    
+
           JSON_NODE_ID=$(jq -r '.images | keys[0]' figma-imagedata.json)
           IMAGE_URL=$(jq -r ".images[\"$JSON_NODE_ID\"]" figma-imagedata.json)
 
           echo "Extracted Node ID: $JSON_NODE_ID"
           echo "Extracted Image URL: $IMAGE_URL"
+
           mkdir -p figma/components
 
           curl -fL "$IMAGE_URL" -o figma/components/${COMPONENT_NAME}.png
-          IMAGE_PATH="figma/components/${COMPONENT_NAME}.png"
-          BASE64_PATH="figma/components/${COMPONENT_NAME}.b64"
-          base64 "figma/components/${COMPONENT_NAME}.png" > "$BASE64_PATH"
 
+          base64 figma/components/${COMPONENT_NAME}.png > figma/components/${COMPONENT_NAME}.b64
 
-          echo "base64_path=$BASE64_PATH" >> $GITHUB_OUTPUT
+          echo "base64_path=figma/components/${COMPONENT_NAME}.b64" >> $GITHUB_OUTPUT
 
-
+      ###################################################################
+      # BUILD COMPONENT_JSON SAFELY USING jq
+      ###################################################################
       - name: Collect component files
         id: components
         run: |
-         COMPONENT_JSON="["
+          COMPONENT_JSON=$(find components -maxdepth 1 -type f -name "*.tsx" -print0 \
+            | xargs -0 -I {} sh -c '
+                FILE="{}"
+                FILENAME=$(basename "$FILE")
+                CONTENT=$(jq -Rs . < "$FILE")
+                printf "{\"filename\": \"%s\", \"content\": %s}\n" "$FILENAME" "$CONTENT"
+              ' | jq -s .)
 
-         while IFS= read -r -d '' file; do
-          FILENAME=$(basename "$file")
-          CONTENT=$(jq -Rs . < "$file")
+          echo "$COMPONENT_JSON" > components.json
+          echo "components_json=$(jq -c . components.json)" >> "$GITHUB_OUTPUT"
 
-          COMPONENT_JSON="${COMPONENT_JSON}{
-            \"filename\": \"${FILENAME}\",
-            \"content\": ${CONTENT}
-          },"
-         done < <(find components -maxdepth 1 -type f -name "*.tsx" -print0)
-
-         COMPONENT_JSON="${COMPONENT_JSON%,}]"
-
-
-
-
-      - name: Create workspace payload
-        id: payload
-        run: |
-          cat <<EOF > workspace-payload.json
-          {
-            "issueKey": "${{ github.event.client_payload.issueKey  }}",
-            "summary": "${{ github.event.client_payload.summary }}",
-            "description": "${{ github.event.client_payload.description  }}",
-            "figmaFileId": "${{ github.event.client_payload.figma_file_id }}",
-          }
-          EOF
-
+      ###################################################################
+      # ANTHROPIC REQUEST (SAFE JSON ENCODING)
+      ###################################################################
       - name: Generate screen via Anthropic
         env:
           ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
         run: |
-          DESCRIPTION="${{ github.event.client_payload.description }}"
+          DESC="${{ github.event.client_payload.description }}"
           BASE64_PATH="${{ steps.figmapng.outputs.base64_path }}"
-          BASE64_IMAGE=$(cat "$BASE64_PATH")
 
-          COMPONENT_JSON="["
-
-          while IFS= read -r -d '' file; do
-            FILENAME=$(basename "$file")
-            CONTENT=$(sed 's/"/\\"/g' "$file")
-
-            COMPONENT_JSON="${COMPONENT_JSON}{
-              \"filename\": \"${FILENAME}\",
-              \"content\": \"${CONTENT}\"
-            },"
-          done < <(find components -maxdepth 1 -type f -name "*.tsx" -print0)
-
-          COMPONENT_JSON="${COMPONENT_JSON%,}]"
-
-          cat > anthropic-request.json <<EOF
-          {
-            "model": "claude-sonnet-4-20250514",
-            "max_tokens": 8192,
-            "temperature": 0.1,
-            "messages": [
-              {
-                "role": "user",
-                "content": [
-                  {
-                    "type": "text",
-                    "text": "Here are the existing components you must use:\n\nCOMPONENT_FILES:\n${COMPONENT_JSON}\n\nUse ONLY these components."
-                  },
-                  {
-                    "type": "image",
-                    "source": {
-                      "type": "base64",
-                      "media_type": "image/png",
-                      "data": "${BASE64_IMAGE}"
-                    }
-                  },
-                  {
-                    "type": "text",
-                    "text": "Now generate the screen following these rules:\n\n${DESCRIPTION}"
-                  }
-                ]
-              }
-            ]
-          }
-          EOF
-
-            RESPONSE=$(curl https://api.anthropic.com/v1/messages \
-              -H "Content-Type: application/json" \
-              -H "x-api-key: $ANTHROPIC_API_KEY" \
-              -H "anthropic-version: 2023-06-01" \
-              -d @anthropic-request.json)
-
-            echo "=== Anthropic Response ==="
-            echo "$RESPONSE" | jq .
-
+          BASE64_IMAGE=$(jq -Rs . < "$BASE64_PATH")
+          COMPONENT_JSON=$(jq -c . components.json)
           
+          jq -n \
+            --arg components "$COMPONENT_JSON" \
+            --arg base64image ${BASE64_IMAGE} \
+            --arg description "${DESC}" \
+            '
+            {
+              model: "claude-sonnet-4-20250514",
+              max_tokens: 8192,
+              temperature: 0.1,
+              messages: [
+                {
+                  role: "user",
+                  content: [
+                    {
+                      type: "text",
+                      text: ("Here are the existing components you must use:\n\nCOMPONENT_FILES:\n" + $components + "\n\nUse ONLY these components.")
+                    },
+                    {
+                      type: "image",
+                      source: {
+                        type: "base64",
+                        media_type: "image/png",
+                        data: ($base64image | fromjson)
+                      }
+                    },
+                    {
+                      type: "text",
+                      text: ("Now generate the screen following these rules:\n\n" + $description)
+                    }
+                  ]
+                }
+              ]
+            }
+            ' > anthropic-request.json
 
+          echo "=== Request Body ==="
+          cat anthropic-request.json
+
+          RESPONSE=$(curl -s https://api.anthropic.com/v1/messages \
+            -H "Content-Type: application/json" \
+            -H "x-api-key: $ANTHROPIC_API_KEY" \
+            -H "anthropic-version: 2023-06-01" \
+            -d @anthropic-request.json)
+
+          echo "=== Anthropic Response ==="
+          echo "$RESPONSE" | jq .
+
+      ###################################################################
+      # CREATE BRANCH + PR
+      ###################################################################
       - name: Create feature branch & PR
         run: |
           ISSUE_KEY="${{ github.event.client_payload.issueKey }}"
