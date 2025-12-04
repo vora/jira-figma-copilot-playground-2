@@ -129,7 +129,7 @@ jobs:
                 "content": [
                   {
                     "type": "text",
-                    "text": "Here are the existing components you must use:\n\nCOMPONENT_FILES:\n$COMPONENT_JSON\n\nUse ONLY these components."
+                    "text": "Here are the existing components you must use:\n\nCOMPONENT_FILES:\n$COMPONENT_JSON_ESCAPED\n\nUse ONLY these components."
                   },
                   {
                     "type": "image",
