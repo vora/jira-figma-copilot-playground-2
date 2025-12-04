@@ -109,13 +109,20 @@ jobs:
           BASE64_PATH="${{ steps.figmapng.outputs.base64_path }}"
           COMPONENT_PATH="${{ steps.components.outputs.component_output_path }}"
 
-          BASE64_IMAGE=$(cat "$BASE64_PATH")
-          COMPONENT_JSON_RAW=$(cat "$COMPONENT_PATH")
+          BASE64_IMAGE=$(cat "$BASE64_PATH" | tr -d '\n' | tr -d '\r' | xargs)
+          COMPONENT_JSON_RAW=$(cat "$COMPONENT_PATH" | tr -d '\n' | tr -d '\r' | xargs)
 
           echo "BASE64_PATH is: '$BASE64_PATH'"
           echo "COMPONENT_PATH is: '$COMPONENT_PATH'"
 
+          # 2. Escape the component JSON for embedding into the Anthropic 'text' field.
+          # jq -Rs . will correctly escape all inner quotes and newlines (\n -> \\n, " -> \")
           COMPONENT_JSON_ESCAPED=$(echo "$COMPONENT_JSON_RAW" | jq -Rs .)
+          
+          # Optional: Print the escaped string for verification (REMOVE IN PROD)
+          echo "--- COMPONENT_JSON_ESCAPED Preview ---"
+          echo "$COMPONENT_JSON_ESCAPED" | head -c 100
+          echo ""
 
 
           cat > anthropic-request.json <<EOF
