@@ -1,21 +1,4 @@
-{
-  "model": "claude-sonnet-4-20250514",
-  "max_tokens": 8192,
-  "temperature": 0.1,
-  "messages": [
-    {
-      "role": "user",
-      "content": [
-        {
-          "type": "text",
-          "text": "Here are the existing components you must use:\n\nCOMPONENT_FILES:\n\n\nUse ONLY these components."
-        },
-        {
-          "type": "image",
-          "source": {
-            "type": "base64",
-            "media_type": "image/png",
-            "data": "iVBORw0KGgoAAAANSUhEUgAAAyIAAAVCCAYAAAD5aU0+AAAACXBIWXMAAAsTAAALEwEAmpwYAAAA
+iVBORw0KGgoAAAANSUhEUgAAAyIAAAVCCAYAAAD5aU0+AAAACXBIWXMAAAsTAAALEwEAmpwYAAAA
 AXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAi1MSURBVHgB7N0JnBxneeD/p6q7R60ZyRr51GGj
 FgF8yhrFBgwh0YhA7JCAxiQQkk1WI8gGNguRHJJssllWo80mJNkES8nmvxAOjXJwBbAEBGyO1Ygj
 cYiNRr4BY7WMdfjU6BqNpo/6P091vzM1pe6Znume+/f1p9w9dVd11av3qfcoEQAAAAAAAAAAAAAA
@@ -2519,66 +2502,4 @@ AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
 AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
 AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
 AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
-AAAAAAAAAAAAAAAAAAAAAAAAAAAAAMAT5/8D167z3dkYnXEAAAAASUVORK5CYII="
-          }
-        },
-        {
-          "type": "text",
-          "text": "Now generate the screen following these rules:\n\nYou are generating a full screen using the Broker App White Label design system.
-
-You MUST follow the design exactly — spacing, typography, radii, colors, and layout.
-You MUST use only components that appear in COMPONENT_FILES.
-You MUST NOT create new components unless explicitly listed.
-You MUST NOT modify existing component APIs.
-
-----
-
-h2. *RULES*
-
-h3. *1. Output files*
-
-You must output *exactly* the following files:
-
-/app/home/page.tsx
-
-
-
-h3. *2. page.tsx*
-
-This file MUST:
-
-* Assemble the entire screen
-* Use only components defined above
-* Match layout of the PNG and Figma structure
-* Follow spacing tokens
-* *3. Component rules*
-
-* Be standalone
-* Use TailwindCSS (latest version)
-* Follow the tokens from metadata
-* Use existing primitives if available
-* Match the exact design in the provided PNG
-
-h3. *4. Absolutely NO deviations*
-
-The model may NOT:
-
-* Add new buttons
-* Add blue Confirm/Cancel buttons
-* Change layout
-* Change colors
-* Change spacing
-* Replace the bottom nav with something else
-* Replace KPI cards with generic cards
-* Replace the header style
-
-h3. *5. Accessibility*
-
-* All interactive elements must have ARIA labels
-* TabBar must follow accessible nav patterns
-* Cards with actions require {{role=button}}"
-        }
-      ]
-    }
-  ]
-}
+AAAAAAAAAAAAAAAAAAAAAAAAAAAAAMAT5/8D167z3dkYnXEAAAAASUVORK5CYII=
