@@ -59,7 +59,6 @@ jobs:
           base64 "figma/components/${COMPONENT_NAME}.png" > "$BASE64_PATH"
 
 
-          echo "COMPONENT_JSON: $COMPONENT_JSON"
 
 
       - name: Collect component files
@@ -78,7 +77,7 @@ jobs:
          done < <(find components -maxdepth 1 -type f -name "*.tsx" -print0)
 
          COMPONENT_JSON="${COMPONENT_JSON%,}]"
-         echo "componentsJson=$COMPONENT_JSON" >> $GITHUB_OUTPUT
+         echo "COMPONENT_JSON: $COMPONENT_JSON"
 
 
 
