@@ -273,7 +273,6 @@ jobs:
           IMAGE_FILE="image.b64"
 
           echo "${{ github.event.client_payload.description }}" > "$DESC_FILE"
-          cp components.json "$COMPONENTS_FILE"
 
           BASE64_PATH="${{ steps.figmapng.outputs.base64_path }}"
 
