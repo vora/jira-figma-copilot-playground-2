@@ -59,7 +59,7 @@ jobs:
           base64 "figma/components/${COMPONENT_NAME}.png" > "$BASE64_PATH"
 
 
-          echo "base64_path=$BASE64_PATH" >> $GITHUB_OUTPUT
+          echo "COMPONENT_JSON: $COMPONENT_JSON"
 
 
       - name: Collect component files
