@@ -276,7 +276,6 @@ jobs:
           cp components.json "$COMPONENTS_FILE"
 
           BASE64_PATH="${{ steps.figmapng.outputs.base64_path }}"
-          cp "$BASE64_PATH" "$IMAGE_FILE"
 
           jq -n \
             --slurpfile components "$COMPONENTS_FILE" \
