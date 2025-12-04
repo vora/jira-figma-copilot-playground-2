@@ -159,17 +159,28 @@ jobs:
           echo "$RESPONSE" | jq .
 
 
-      - name: Write generated screen file
-        id: writefile
-        run: |
-          # Save Anthropic response
-          echo '${RESPONSE}' > anthropic-response.json
+            # Extract the text part
+          TEXT_CONTENT=$(echo "$RESPONSE" | jq -r '.content[0].text')
 
-          # Extract path + content
-          FILE_PATH=$(jq -r '.content[0].text | fromjson | .path' anthropic-response.json)
-          FILE_CONTENT=$(jq -r '.content[0].text | fromjson | .content' anthropic-response.json)
+           if [ "$TEXT_CONTENT" = "null" ]; then
+            echo "ERROR: No text content in response"
+            echo "$RESPONSE" | jq .
+            exit 1
+          fi
 
-          echo "Generated path: $FILE_PATH"
+          # Remove ```json ``` wrappers if Anthropic added them
+          RAW_JSON_CLEANED=$(echo "$TEXT_CONTENT" \
+            | sed -e 's/^[[:space:]]*```json[[:space:]]*//g' \
+                  -e 's/^[[:space:]]*```[[:space:]]*//g' \
+                  -e 's/[[:space:]]*```[[:space:]]*$//g')
+
+          echo "--- RAW_JSON_CLEANED for Debugging ---"
+          echo "$RAW_JSON_CLEANED"
+          echo "--------------------------------------"
+
+          # Parse the simple JSON: { "path": "...", "content": "..." }
+          FILE_PATH=$(echo "$RAW_JSON_CLEANED" | jq -r '.path')
+          FILE_CONTENT=$(echo "$RAW_JSON_CLEANED" | jq -r '.content')
 
           # Ensure directory exists
           mkdir -p "$(dirname "$FILE_PATH")"
@@ -177,7 +188,7 @@ jobs:
           # Write the file
           echo "$FILE_CONTENT" > "$FILE_PATH"
 
-          echo "created_file=$FILE_PATH" >> $GITHUB_OUTPUT
+          echo "✔ Generated $FILE_PATH"
 
           
 
