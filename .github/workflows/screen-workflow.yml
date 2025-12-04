@@ -116,7 +116,7 @@ jobs:
           echo "COMPONENT_PATH is: '$COMPONENT_PATH'"
 
           COMPONENT_ESCAPED=$(jq -Rs . <<< "$COMPONENT_JSON")
-
+          COMPONENT_ESCAPED=${COMPONENT_ESCAPED:1:-1} 
 
 
           cat > anthropic-request.json <<EOF
@@ -130,7 +130,7 @@ jobs:
                 "content": [
                   {
                     "type": "text",
-                    "text": "Here are the existing components you must use:\n\nCOMPONENT_FILES:\n${COMPONENT_ESCAPED}\n\nUse ONLY these components."
+                    "text": "Here are the existing components you must use:\n\nCOMPONENT_FILES:\n${COMPONENT_JSON}\n\nUse ONLY these components."
                   },
                   {
                     "type": "image",
