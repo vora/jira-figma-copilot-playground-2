@@ -111,47 +111,43 @@ jobs:
           COMPONENT_PATH="${{ steps.components.outputs.component_output_path }}"
 
           BASE64_IMAGE=$(cat "$BASE64_PATH")
-          COMPONENT_JSON=$(cat "$COMPONENT_PATH")
+          
+          # Read and properly escape the component JSON for embedding in JSON text field
+          COMPONENT_JSON_ESCAPED=$(cat "$COMPONENT_PATH" | jq -c . | jq -Rs .)
 
-          # Properly escape the description and component JSON for inclusion in JSON
-          DESCRIPTION_ESCAPED=$(echo "$DESCRIPTION" | jq -Rs .)
-          COMPONENT_JSON_ESCAPED=$(echo "$COMPONENT_JSON" | jq -Rs .)
+          # Build the prompt text and escape it for JSON
+          PROMPT_TEXT="Generate a single React TypeScript file as JSON:\\n\\n{\\n  \"path\": \"app/home/page.tsx\",\\n  \"content\": \"...\"\\n}\\n\\nJira description:\\n${DESCRIPTION}\\n\\nFigma link: ${FIGMA_URL}\\n\\nCOMPONENT_FILES:\\n"
+          
+          # Concatenate with escaped component JSON
+          PROMPT_TEXT_WITH_COMPONENTS=$(jq -n --arg prompt "$PROMPT_TEXT" --argjson components "$COMPONENT_JSON_ESCAPED" '$prompt + $components + "\\n\\nFollow the UI in the attached image and use the components provided here. DO NOT output raw code blocks."')
 
-          # Build the prompt text with proper escaping
-          PROMPT_TEXT="Generate a single React TypeScript file as JSON:\n\n{\n  \"path\": \"app/home/page.tsx\",\n  \"content\": \"...\"\n}\n\nJira description:\n${DESCRIPTION}\n\nFigma link: ${FIGMA_URL}\n\nCOMPONENT_FILES:\n${COMPONENT_JSON}\n\nFollow the UI in the attached image and use the components provided here. DO NOT output raw code blocks."
-          PROMPT_TEXT_ESCAPED=$(echo "$PROMPT_TEXT" | jq -Rs .)
-
-          # Use jq to build the JSON request properly
-          jq -n \
-            --arg model "claude-sonnet-4-20250514" \
-            --argjson max_tokens 8192 \
-            --argjson temperature 0.1 \
-            --arg base64_image "$BASE64_IMAGE" \
-            --arg prompt_text "$PROMPT_TEXT" \
-            '{
-              model: $model,
-              max_tokens: $max_tokens,
-              temperature: $temperature,
-              messages: [
-                {
-                  role: "user",
-                  content: [
-                    {
-                      type: "image",
-                      source: {
-                        type: "base64",
-                        media_type: "image/png",
-                        data: $base64_image
-                      }
-                    },
-                    {
-                      type: "text",
-                      text: $prompt_text
+          # Build anthropic-request.json using here-doc (same approach as component-workflow)
+          cat > anthropic-request.json <<EOF
+          {
+            "model": "claude-sonnet-4-20250514",
+            "max_tokens": 8192,
+            "temperature": 0.1,
+            "messages": [
+              {
+                "role": "user",
+                "content": [
+                  {
+                    "type": "image",
+                    "source": {
+                      "type": "base64",
+                      "media_type": "image/png",
+                      "data": "${BASE64_IMAGE}"
                     }
-                  ]
-                }
-              ]
-            }' > anthropic-request.json
+                  },
+                  {
+                    "type": "text",
+                    "text": ${PROMPT_TEXT_WITH_COMPONENTS}
+                  }
+                ]
+              }
+            ]
+          }
+          EOF
 
           RESPONSE=$(curl https://api.anthropic.com/v1/messages \
             -H "Content-Type: application/json" \
