@@ -268,16 +268,20 @@ jobs:
         env:
           ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
         run: |
-          DESC="${{ github.event.client_payload.description }}"
-          BASE64_PATH="${{ steps.figmapng.outputs.base64_path }}"
+          DESC_FILE="description.txt"
+          COMPONENTS_FILE="components.json"
+          IMAGE_FILE="image.b64"
 
-          BASE64_IMAGE=$(jq -Rs . < "$BASE64_PATH")
-          COMPONENT_JSON=$(jq -c . components.json)
-          
+          echo "${{ github.event.client_payload.description }}" > "$DESC_FILE"
+          cp components.json "$COMPONENTS_FILE"
+
+          BASE64_PATH="${{ steps.figmapng.outputs.base64_path }}"
+          cp "$BASE64_PATH" "$IMAGE_FILE"
+
           jq -n \
-            --arg components "$COMPONENT_JSON" \
-            --arg base64image ${BASE64_IMAGE} \
-            --arg description "${DESC}" \
+            --slurpfile components "$COMPONENTS_FILE" \
+            --rawfile base64image "$IMAGE_FILE" \
+            --rawfile desc "$DESC_FILE" \
             '
             {
               model: "claude-sonnet-4-20250514",
@@ -289,19 +293,24 @@ jobs:
                   content: [
                     {
                       type: "text",
-                      text: ("Here are the existing components you must use:\n\nCOMPONENT_FILES:\n" + $components + "\n\nUse ONLY these components.")
+                      text:
+                        ("Here are the existing components you must use:\n\nCOMPONENT_FILES:\n"
+                        + ($components | tostring) +
+                        "\n\nUse ONLY these components.")
                     },
                     {
                       type: "image",
                       source: {
                         type: "base64",
                         media_type: "image/png",
-                        data: ($base64image | fromjson)
+                        data: $base64image
                       }
                     },
                     {
                       type: "text",
-                      text: ("Now generate the screen following these rules:\n\n" + $description)
+                      text:
+                        ("Now generate the screen following these rules:\n\n"
+                        + $desc)
                     }
                   ]
                 }
