@@ -110,13 +110,12 @@ jobs:
           COMPONENT_PATH="${{ steps.components.outputs.component_output_path }}"
 
           BASE64_IMAGE=$(cat "$BASE64_PATH")
-          COMPONENT_JSON=$(cat "$COMPONENT_PATH")
+          COMPONENT_JSON_RAW=$(cat "$COMPONENT_PATH")
 
           echo "BASE64_PATH is: '$BASE64_PATH'"
           echo "COMPONENT_PATH is: '$COMPONENT_PATH'"
 
-          COMPONENT_ESCAPED=$(jq -Rs . <<< "$COMPONENT_JSON")
-          COMPONENT_ESCAPED=${COMPONENT_ESCAPED:1:-1} 
+          COMPONENT_JSON_ESCAPED=$(echo "$COMPONENT_JSON_RAW" | jq -Rs .)
 
 
           cat > anthropic-request.json <<EOF
@@ -130,19 +129,19 @@ jobs:
                 "content": [
                   {
                     "type": "text",
-                    "text": "Here are the existing components you must use:\n\nCOMPONENT_FILES:\n${COMPONENT_JSON}\n\nUse ONLY these components."
+                    "text": "Here are the existing components you must use:\n\nCOMPONENT_FILES:\n$COMPONENT_JSON\n\nUse ONLY these components."
                   },
                   {
                     "type": "image",
                     "source": {
                       "type": "base64",
                       "media_type": "image/png",
-                      "data": "${BASE64_IMAGE}"
+                      "data": "$BASE64_IMAGE"
                     }
                   },
                   {
                     "type": "text",
-                    "text": "Now generate the screen following these rules:\n\n${DESCRIPTION}"
+                    "text": "Now generate the screen following these rules:\n\n$DESCRIPTION"
                   }
                 ]
               }
