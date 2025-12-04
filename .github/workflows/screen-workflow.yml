@@ -109,18 +109,13 @@ jobs:
           BASE64_PATH="${{ steps.figmapng.outputs.base64_path }}"
           COMPONENT_PATH="${{ steps.components.outputs.component_output_path }}"
 
-          # 1. Read files and strip ALL newlines/carriage returns using tr
-          # This is the essential fix to prevent JSON breaking.
-          BASE64_IMAGE=$(cat "$BASE64_PATH" | tr -d '\n' | tr -d '\r')
-          COMPONENT_JSON_RAW=$(cat "$COMPONENT_PATH" | tr -d '\n' | tr -d '\r')
-          
-          # Optional: Use Bash parameter expansion to strip any remaining leading/trailing spaces
-          # (though tr -d should handle all newlines, this is for general cleanliness)
-          BASE64_IMAGE="${BASE64_IMAGE// /}" # Removes all spaces, safe for base64
+          BASE64_IMAGE=$(cat "$BASE64_PATH")
+          COMPONENT_JSON=$(cat "$COMPONENT_PATH")
 
-          # 2. Escape the component JSON for embedding into the Anthropic 'text' field.
-          # jq -Rs . correctly handles the escaping of quotes/backslashes.
-          COMPONENT_JSON_ESCAPED=$(echo "$COMPONENT_JSON_RAW" | jq -Rs .)
+          echo "BASE64_PATH is: '$BASE64_PATH'"
+          echo "COMPONENT_PATH is: '$COMPONENT_PATH'"
+
+          
 
 
           cat > anthropic-request.json <<EOF
@@ -133,21 +128,19 @@ jobs:
                 "role": "user",
                 "content": [
                   {
-                    "type": "text",
-                    "text": "Here are the existing components you must use:\n\nCOMPONENT_FILES:\n$COMPONENT_JSON_ESCAPED\n\nUse ONLY these components."
-                  },
-                  {
+                      {
                     "type": "image",
                     "source": {
                       "type": "base64",
                       "media_type": "image/png",
-                      "data": "$BASE64_IMAGE"
+                      "data": "${BASE64_IMAGE}"
                     }
-                  },
+                  },                     
+
                   {
                     "type": "text",
-                    "text": "Now generate the screen following these rules:\n\n$DESCRIPTION"
-                  }
+                    "text": "Here are the existing components you must use:\\n\\nCOMPONENT_FILES:\\n${COMPONENT_JSON}\\n\\nUse ONLY these components\\n\\nJira description:\\n${DESCRIPTION}"
+                  },
                 ]
               }
             ]
