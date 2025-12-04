@@ -128,7 +128,6 @@ jobs:
                 "role": "user",
                 "content": [
                   {
-                      {
                     "type": "image",
                     "source": {
                       "type": "base64",
@@ -136,12 +135,10 @@ jobs:
                       "data": "${BASE64_IMAGE}"
                     }
                   },                     
-
                   {
                     "type": "text",
                     "text": "Generate a single React TypeScript file as JSON:\\n\\n{\\n  \\"path\\": \\"app/home/page.tsx\\",\\n  \\"content\\": \\"...\\"\\n}\\n\\nJira description:\\n${DESCRIPTION}\\n\\nFigma link: ${FIGMA_URL}\\n\\nCOMPONENT_FILES: ${COMPONENT_JSON}\\n\\nFollow the UI in the attached image and use the components provided here. DO NOT output raw code blocks.
-
-                  },
+                  }
                 ]
               }
             ]
