@@ -117,32 +117,41 @@ jobs:
           
 
 
-          cat > anthropic-request.json <<EOF
+          jq -n \
+          --arg img "$BASE64_IMAGE" \
+          --arg desc "$DESCRIPTION" \
+          --arg comp "$COMPONENT_JSON" \
+          --arg fig "$FIGMA_URL" \
+          '
           {
-            "model": "claude-sonnet-4-20250514",
-            "max_tokens": 8192,
-            "temperature": 0.1,
-            "messages": [
+            model: "claude-sonnet-4-20250514",
+            max_tokens: 8192,
+            temperature: 0.1,
+            messages: [
               {
-                "role": "user",
-                "content": [
+                role: "user",
+                content: [
                   {
-                    "type": "image",
-                    "source": {
-                      "type": "base64",
-                      "media_type": "image/png",
-                      "data": "${BASE64_IMAGE}"
+                    type: "image",
+                    source: {
+                      type: "base64",
+                      media_type: "image/png",
+                      data: $img
                     }
-                  },                     
+                  },
                   {
-                    "type": "text",
-                    "text": "Generate a single React TypeScript file as JSON:\\n\\n{\\n  \\"path\\": \\"app/home/page.tsx\\",\\n  \\"content\\": \\"...\\"\\n}\\n\\nJira description:\\n${DESCRIPTION}\\n\\nFigma link: ${FIGMA_URL}\\n\\nCOMPONENT_FILES: ${COMPONENT_JSON}\\n\\nFollow the UI in the attached image and use the components provided here. DO NOT output raw code blocks.
+                    type: "text",
+                    text:
+                      ("Generate a single React TypeScript file as JSON.\n\n" +
+                      "Jira description:\n" + $desc + "\n\n" +
+                      "Figma link: " + $fig + "\n\n" +
+                      "COMPONENT_FILES:\n" + $comp)
                   }
                 ]
               }
             ]
           }
-          EOF
+          ' > anthropic-request.json
 
             RESPONSE=$(curl https://api.anthropic.com/v1/messages \
               -H "Content-Type: application/json" \
