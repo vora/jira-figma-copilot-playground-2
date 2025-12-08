@@ -82,6 +82,21 @@ jobs:
 
       - name: Generate screen from Figma MCP
         run: |
+
+          curl -X POST "https://mcp.figma.com/mcp" \
+          -H "Authorization: Bearer $FIGMA_TOKEN" \
+          -H "Content-Type: application/json" \
+          -d '{
+            "jsonrpc": "2.0",
+            "method": "listMethods",
+            "params": {},
+            "id": 1
+          }' > mcp_response_test_1.json
+
+          cat mcp_response_test_1.json
+
+
+          
           curl -X POST "https://mcp.figma.com/mcp" \
           -H "Authorization: Bearer $FIGMA_TOKEN" \
           -H "Content-Type: application/json" \
