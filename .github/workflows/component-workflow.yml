@@ -80,39 +80,20 @@ jobs:
           }
           EOF
 
-      - name: Generate screen from Figma MCP
+      - name: Fetch Figma Node Metadata
+        id: fetch-metadata
+        env:
+            FIGMA_TOKEN: ${{ secrets.FIGMA_TOKEN }}
+            FIGMA_FILE_ID: ${{ github.event.inputs.figma_file_id }}
+            NODE_ID: ${{ github.event.inputs.node_id }}
         run: |
-
-          curl -X POST "https://mcp.figma.com/mcp" \
-          -H "Authorization: Bearer $FIGMA_TOKEN" \
-          -H "Content-Type: application/json" \
-          -d '{
-            "jsonrpc": "2.0",
-            "method": "listMethods",
-            "params": {},
-            "id": 1
-          }' > mcp_response_test_1.json
-
-          cat mcp_response_test_1.json
-
-
-          
-          curl -X POST "https://mcp.figma.com/mcp" \
-          -H "Authorization: Bearer $FIGMA_TOKEN" \
-          -H "Content-Type: application/json" \
-          -d '{
-            "jsonrpc": "2.0",
-            "method": "generateScreen",
-            "params": {
-              "figmaLink": "https://www.figma.com/design/049DL3s5yK6CdYuNygmHeX/Broker-App-White-Label?node-id=1710-5444&m=dev",
-              "screenType": "LoginScreen",
-              "props": { "userName": "Philip" },
-              "options": { "format": "json" }
-            },
-            "id": 1
-          }' > mcp_response.json
-
-          cat mcp_response.json
+            # Fetch node metadata
+            curl -H "X-Figma-Token: $FIGMA_TOKEN" \
+              "https://api.figma.com/v1/files/$FIGMA_FILE_ID/nodes?ids=$NODE_ID&depth=5&geometry=paths" \
+              -o figma-metadata.json
+            
+            echo "Figma metadata saved to figma-metadata.json"
+            cat figma-metadata.json | jq '.' || echo "Response is not valid JSON"
 
       - name: Generate modal via Anthropic
         env:
