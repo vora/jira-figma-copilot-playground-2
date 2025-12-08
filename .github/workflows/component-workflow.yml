@@ -80,6 +80,19 @@ jobs:
           }
           EOF
 
+      - name: Generate screen from Figma MCP
+        run: |
+          curl -X POST "https://mcp.figma.com/mcp/generate" \
+          -H "Authorization: Bearer $FIGMA_TOKEN" \
+          -H "Content-Type: application/json" \
+          -d '{
+            "figmaLink": "https://www.figma.com/design/049DL3s5yK6CdYuNygmHeX/Broker-App-White-Label?node-id=1710-5444&m=dev",
+            "screenType": "LoginScreen",
+            "props": { "userName": "Philip" },
+            "options": { "format": "json" }
+          }' > mcp_response.json
+          echo mcp_response.json
+
       - name: Generate modal via Anthropic
         env:
           ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
