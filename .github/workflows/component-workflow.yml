@@ -82,7 +82,7 @@ jobs:
 
       - name: Generate screen from Figma MCP
         run: |
-          curl -X POST "https://mcp.figma.com/mcp/generate" \
+          curl -X POST "https://mcp.figma.com/mcp" \
           -H "Authorization: Bearer $FIGMA_TOKEN" \
           -H "Content-Type: application/json" \
           -d '{
