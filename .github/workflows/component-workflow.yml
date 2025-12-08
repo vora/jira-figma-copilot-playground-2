@@ -84,12 +84,12 @@ jobs:
         id: fetch-metadata
         env:
             FIGMA_TOKEN: ${{ secrets.FIGMA_TOKEN }}
-            FIGMA_FILE_ID: ${{ github.event.inputs.figma_file_id }}
-            NODE_ID: ${{ github.event.inputs.node_id }}
+            FIGMA_FILE_ID: ${{ github.event.client_payload.figma_file_id }}
+            NODE_ID: ${{ github.event.client_payload.figma_node_id }}
         run: |
             # Fetch node metadata
-            curl -H "X-Figma-Token: $FIGMA_TOKEN" \
-              "https://api.figma.com/v1/files/$FIGMA_FILE_ID/nodes?ids=$NODE_ID&depth=5&geometry=paths" \
+            curl -s -H "X-Figma-Token: $FIGMA_TOKEN" \
+              "https://api.figma.com/v1/files/$FIGMA_FILE_ID/nodes?ids=$NODE_ID" \
               -o figma-metadata.json
             
             echo "Figma metadata saved to figma-metadata.json"
