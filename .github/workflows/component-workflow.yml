@@ -86,12 +86,18 @@ jobs:
           -H "Authorization: Bearer $FIGMA_TOKEN" \
           -H "Content-Type: application/json" \
           -d '{
-            "figmaLink": "https://www.figma.com/design/049DL3s5yK6CdYuNygmHeX/Broker-App-White-Label?node-id=1710-5444&m=dev",
-            "screenType": "LoginScreen",
-            "props": { "userName": "Philip" },
-            "options": { "format": "json" }
+            "jsonrpc": "2.0",
+            "method": "generateScreen",
+            "params": {
+              "figmaLink": "https://www.figma.com/design/049DL3s5yK6CdYuNygmHeX/Broker-App-White-Label?node-id=1710-5444&m=dev",
+              "screenType": "LoginScreen",
+              "props": { "userName": "Philip" },
+              "options": { "format": "json" }
+            },
+            "id": 1
           }' > mcp_response.json
-          echo mcp_response.json
+
+          cat mcp_response.json
 
       - name: Generate modal via Anthropic
         env:
