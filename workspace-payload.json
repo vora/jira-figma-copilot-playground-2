@@ -1,50 +1,87 @@
 {
-  "issueKey": "PLAYG-10",
-  "summary": "Commissions Component",
-  "description": "You are generating a commissions component using the Broker App White Label design system.
-You MUST adhere to the Figma metadata and PNG reference located at:
-You MUST follow the design exactly — spacing, typography, radii, colors, and layout *RULES*
+  "issueKey": "PLAYG-14",
+  "summary": "Demo Screen Ex2",
+  "description": "h3. *Title*
 
-# *Output files*
-/components/commissions.tsx
-You must output *exactly* the following files:
-# *page.tsx*
+Broker Home Screen – Data-Driven Dashboard Implementation
+
+----
+
+h3. *Problem Statement*
+
+Brokers need a centralized home screen immediately after login to view high-level account activity and access primary workflows without navigating multiple pages.
+For this story you MUST follow the design exactly - spacing, typography colors, layout.
+
+You MUST use only components that appear in the COMPONENT_FILES.
+You MUST NOT create new components unless explicitly listed.
+
+You Must NOT modify existing components, or their APIs.
+
+----
+
+h3. *User Story*
+
+As a *Broker*,
+I want to see a summary of my active business and next actions on login,
+So that I can quickly understand my workload and navigate to key areas.
+
+----
+
+h3. *Design Source*
+
+* Figma: _(link)_
+
+----
+
+h2. *Rules* 
+
+# Output files 
+
+You must output exactly the following file:
+/app/home/page.tsx
+
+This is where the Broker home screen will be defined.
+
+h2. *2.page.tsx*
 
 This file MUST:
+Assemble the entire screen.
 
-* Use only components defined above
-* Match layout of the PNG and Figma structure
-* Follow spacing tokens
-* Monthly increase bar can be done with raw tailwind
+Use only components defined above.
 
-# *Component rules*
+Match layout of the PNG and Figma structure.
 
-Each component must:
+Make sure the components are in the correct order on the screen. DO NOT mix up the placement of the components.
 
-* Be standalone
-* Use TailwindCSS (latest version)
-* Follow the tokens from metadata
-* Use existing primitives if available
-* Match the exact design in the provided PNG
+follow spacing tokens.
 
-# *Absolutely NO deviations*
+The “View all client” section, when responsive should be 1 SINGLE ROW that you can scroll horizontally through.
 
+The “Latest News” section, when responsive should be 1 SINGLE ROW that you can scroll horizontally through.
 
-The model may NOT:
+The “Commissions” section, when responsive should be 1 SINGLE ROW that you can scroll horizontally through.
 
-* Add new buttons
-* Add blue Confirm/Cancel buttons
-* Change layout
-* Change colors
-* Change spacing
-* Replace the bottom nav with something else
-* Replace KPI cards with generic cards
-* Replace the header style
+Components MUST use entire width of screen that is available to them, through every screen size.
 
-# *Accessibility*
+Headers for each component MUST match styles from figma design. Meaning, NO deviation from font weight, or color.
 
-* All interactive elements must have ARIA labels
-* TabBar must follow accessible nav patterns
-* Cards with actions require role=button",
+h2. *3.Absolutely NO deviations.*
+
+the model may NOT:
+Add new buttons.
+
+add blue confirm or cancel buttons.
+
+change layout.
+
+change color.
+
+change spacing.
+
+replace the bottom nav with something else.
+
+replace any styles.
+
+replace cards with generic cards.",
   "figmaFileId": "049DL3s5yK6CdYuNygmHeX",
 }
