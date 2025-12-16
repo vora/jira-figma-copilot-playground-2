@@ -1,18 +1,19 @@
-import React from 'react';
-import { Search } from '@/components/search';
-import BottomNav from '@/components/BottomNav';
-import NewsTitle from '@/components/newsTitle';
-import MarketSegmentCard from '@/components/MarketSegmentCard';
-import ClientCard from '@/components/clientCard';
-import Commissions from '@/components/commissions';
+"use client";
+import React from "react";
+import { Search } from "@/components/search";
+import BottomNav from "@/components/BottomNav";
+import NewsTitle from "@/components/newsTitle";
+import MarketSegmentCard from "@/components/MarketSegmentCard";
+import ClientCard from "@/components/clientCard";
+import Commissions from "@/components/commissions";
 
 const HomePage: React.FC = () => {
   const statusItems = [
-    { label: 'Action Required', count: 1, color: 'teal' },
-    { label: 'Submitted', count: 23, color: 'blue' },
-    { label: 'In Progress', count: 26, color: 'yellow' },
-    { label: 'Completed', count: 98, color: 'green' },
-    { label: 'Not Approved', count: 17, color: 'red' }
+    { label: "Action Required", count: 1, color: "teal" },
+    { label: "Submitted", count: 23, color: "blue" },
+    { label: "In Progress", count: 26, color: "yellow" },
+    { label: "Completed", count: 98, color: "green" },
+    { label: "Not Approved", count: 17, color: "red" },
   ];
 
   return (
@@ -40,12 +41,12 @@ const HomePage: React.FC = () => {
             </button>
           </div>
         </div>
-        
+
         <div className="mb-6">
           <p className="text-gray-600 text-sm mb-1">Welcome,</p>
           <h1 className="text-2xl font-bold text-gray-900">Steven Williams</h1>
         </div>
-        
+
         <NewsTitle newCount={10} outstandingCount={8} />
       </div>
 
@@ -57,13 +58,15 @@ const HomePage: React.FC = () => {
       {/* Recently Viewed Clients */}
       <div className="px-4 py-4">
         <div className="flex items-center justify-between mb-4">
-          <h2 className="text-lg font-semibold text-gray-900">Recently Viewed Clients</h2>
+          <h2 className="text-lg font-semibold text-gray-900">
+            Recently Viewed Clients
+          </h2>
           <button className="text-gray-600 text-sm font-medium flex items-center">
             View All Clients
             <span className="ml-1">→</span>
           </button>
         </div>
-        
+
         <div className="flex space-x-4 overflow-x-auto pb-2">
           <div className="flex-shrink-0 w-64">
             <ClientCard clientName="Cunningham Hardware" clientId="12345" />
@@ -86,7 +89,7 @@ const HomePage: React.FC = () => {
             <span className="ml-1">→</span>
           </button>
         </div>
-        
+
         <div className="flex space-x-4 overflow-x-auto pb-2">
           <div className="flex-shrink-0 w-80">
             <div className="bg-white rounded-lg p-4 shadow-sm border border-gray-100">
@@ -129,7 +132,9 @@ const HomePage: React.FC = () => {
 
       {/* Application Summary */}
       <div className="px-4 py-4">
-        <h2 className="text-lg font-semibold text-gray-900 mb-4">Application Summary</h2>
+        <h2 className="text-lg font-semibold text-gray-900 mb-4">
+          Application Summary
+        </h2>
         <div className="flex justify-center">
           <MarketSegmentCard
             title="Medicare, Small Group(s)"
@@ -148,37 +153,43 @@ const HomePage: React.FC = () => {
             <span className="ml-1">→</span>
           </button>
         </div>
-        
+
         <div className="flex space-x-4 overflow-x-auto pb-2">
           <div className="flex-shrink-0 w-80">
             <div className="bg-white rounded-lg p-4 shadow-sm border border-gray-100">
               <div className="flex items-start justify-between">
                 <div className="flex-1">
-                  <p className="text-sm text-gray-600 mb-1">October total earned</p>
-                  <p className="text-2xl font-semibold text-gray-900 mb-2">$5,038.24</p>
+                  <p className="text-sm text-gray-600 mb-1">
+                    October total earned
+                  </p>
+                  <p className="text-2xl font-semibold text-gray-900 mb-2">
+                    $5,038.24
+                  </p>
                 </div>
                 <div className="flex items-center space-x-2">
                   <div className="w-16 h-8 bg-blue-100 rounded-sm relative overflow-hidden">
-                    <svg 
-                      viewBox="0 0 64 32" 
+                    <svg
+                      viewBox="0 0 64 32"
                       className="w-full h-full"
                       preserveAspectRatio="none"
                     >
-                      <path 
-                        d="M0,20 Q16,16 32,18 T64,14" 
-                        stroke="#3B82F6" 
-                        strokeWidth="2" 
+                      <path
+                        d="M0,20 Q16,16 32,18 T64,14"
+                        stroke="#3B82F6"
+                        strokeWidth="2"
                         fill="none"
                       />
-                      <path 
-                        d="M0,20 Q16,16 32,18 T64,14 L64,32 L0,32 Z" 
-                        fill="#3B82F6" 
+                      <path
+                        d="M0,20 Q16,16 32,18 T64,14 L64,32 L0,32 Z"
+                        fill="#3B82F6"
                         fillOpacity="0.2"
                       />
                     </svg>
                   </div>
                   <div className="flex items-center">
-                    <span className="text-sm font-medium text-blue-600">+8%</span>
+                    <span className="text-sm font-medium text-blue-600">
+                      +8%
+                    </span>
                   </div>
                 </div>
               </div>
@@ -191,31 +202,37 @@ const HomePage: React.FC = () => {
             <div className="bg-white rounded-lg p-4 shadow-sm border border-gray-100">
               <div className="flex items-start justify-between">
                 <div className="flex-1">
-                  <p className="text-sm text-gray-600 mb-1">October total earned</p>
-                  <p className="text-2xl font-semibold text-gray-900 mb-2">$5,038.24</p>
+                  <p className="text-sm text-gray-600 mb-1">
+                    October total earned
+                  </p>
+                  <p className="text-2xl font-semibold text-gray-900 mb-2">
+                    $5,038.24
+                  </p>
                 </div>
                 <div className="flex items-center space-x-2">
                   <div className="w-16 h-8 bg-blue-100 rounded-sm relative overflow-hidden">
-                    <svg 
-                      viewBox="0 0 64 32" 
+                    <svg
+                      viewBox="0 0 64 32"
                       className="w-full h-full"
                       preserveAspectRatio="none"
                     >
-                      <path 
-                        d="M0,20 Q16,16 32,18 T64,14" 
-                        stroke="#3B82F6" 
-                        strokeWidth="2" 
+                      <path
+                        d="M0,20 Q16,16 32,18 T64,14"
+                        stroke="#3B82F6"
+                        strokeWidth="2"
                         fill="none"
                       />
-                      <path 
-                        d="M0,20 Q16,16 32,18 T64,14 L64,32 L0,32 Z" 
-                        fill="#3B82F6" 
+                      <path
+                        d="M0,20 Q16,16 32,18 T64,14 L64,32 L0,32 Z"
+                        fill="#3B82F6"
                         fillOpacity="0.2"
                       />
                     </svg>
                   </div>
                   <div className="flex items-center">
-                    <span className="text-sm font-medium text-blue-600">+12%</span>
+                    <span className="text-sm font-medium text-blue-600">
+                      +12%
+                    </span>
                   </div>
                 </div>
               </div>
