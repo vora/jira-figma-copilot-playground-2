@@ -222,6 +222,8 @@ jobs:
           echo "pr_number=$PR_NUMBER" >> "$GITHUB_OUTPUT"
           echo "PR Number: $PR_NUMBER"
 
+
+# allow commands gives agent permission to review PR. 
       - uses: anthropics/claude-code-action@v1
         with:
           prompt: "Review PR #${{ steps.createPr.outputs.pr_number }} for security issues"
@@ -230,3 +232,5 @@ jobs:
             --system-prompt "Follow our coding standards"
             --max-turns 10
             --model claude-sonnet-4-5-20250929
+            --allow-commands gh,git,cat,sed,grep,ls
+            
