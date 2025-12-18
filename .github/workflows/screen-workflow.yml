@@ -198,6 +198,7 @@ jobs:
           
 
       - name: Create feature branch & PR
+        id: createPr
         run: |
           ISSUE_KEY="${{ github.event.client_payload.issueKey }}"
           SUMMARY="${{ github.event.client_payload.summary }}"
@@ -222,8 +223,9 @@ jobs:
           echo "PR Number: $PR_NUMBER"
 
       - uses: anthropics/claude-code-action@v1
+        run: PR_NUMBER="${{ steps.createPr.outputs.pr_number }}"
         with:
-          prompt: "Review this PR for security issues"
+          prompt: "Review this PR: $PR_NUMBER for security issues"
           anthropic_api_key: ${{ secrets.ANTHROPIC_API_KEY }}
           claude_args: |
             --system-prompt "Follow our coding standards"
