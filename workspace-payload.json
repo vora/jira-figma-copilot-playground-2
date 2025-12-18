@@ -1,50 +1,36 @@
 {
-  "issueKey": "PLAYG-10",
-  "summary": "Commissions Component",
-  "description": "You are generating a commissions component using the Broker App White Label design system.
-You MUST adhere to the Figma metadata and PNG reference located at:
-You MUST follow the design exactly — spacing, typography, radii, colors, and layout *RULES*
+  "issueKey": "PLAYG-16",
+  "summary": "CLONE - Demo Screen Ex4",
+  "description": "Broker Home Screen – Initial Implementation
 
-# *Output files*
-/components/commissions.tsx
-You must output *exactly* the following files:
-# *page.tsx*
+h3. *Description*
 
-This file MUST:
+Create the Broker Home Screen based on the provided Figma designs. This screen will serve as the main landing page for brokers after login and should display key actions and summary information.
 
-* Use only components defined above
-* Match layout of the PNG and Figma structure
-* Follow spacing tokens
-* Monthly increase bar can be done with raw tailwind
+h3. *Acceptance Criteria*
 
-# *Component rules*
+* Broker Home Screen matches Figma designs
+* Displays broker welcome message
+* Displays summary cards for:
+** Active listings
+** Pending deals
+** Messages
+* Clicking a summary card navigates to the appropriate page
+* Screen is responsive on desktop and tablet
+* Uses existing layout components
 
-Each component must:
+h3. *Design*
 
-* Be standalone
-* Use TailwindCSS (latest version)
-* Follow the tokens from metadata
-* Use existing primitives if available
-* Match the exact design in the provided PNG
+* [Figma link: |https://www.figma.com/design/049DL3s5yK6CdYuNygmHeX/Broker-App-White-Label?node-id=2072-43972&m=dev][_(link)_|https://www.figma.com/design/049DL3s5yK6CdYuNygmHeX/Broker-App-White-Label?node-id=2072-43972&m=dev]
 
-# *Absolutely NO deviations*
+h3. *Technical Notes*
 
+* Use existing layout and card components where possible
+* Follow current routing conventions
 
-The model may NOT:
+h3. *Out of Scope*
 
-* Add new buttons
-* Add blue Confirm/Cancel buttons
-* Change layout
-* Change colors
-* Change spacing
-* Replace the bottom nav with something else
-* Replace KPI cards with generic cards
-* Replace the header style
-
-# *Accessibility*
-
-* All interactive elements must have ARIA labels
-* TabBar must follow accessible nav patterns
-* Cards with actions require role=button",
+* Mobile-specific optimizations
+* API pagination improvements",
   "figmaFileId": "049DL3s5yK6CdYuNygmHeX",
 }
