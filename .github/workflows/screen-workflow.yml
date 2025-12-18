@@ -222,6 +222,16 @@ jobs:
           echo "pr_number=$PR_NUMBER" >> "$GITHUB_OUTPUT"
           echo "PR Number: $PR_NUMBER"
 
+      - name: Check available commands
+        run: |
+          echo "Checking commands..."
+          for cmd in gh git cat sed grep ls; do
+            if command -v $cmd > /dev/null; then
+              echo "$cmd is installed"
+            else
+              echo "$cmd is NOT installed"
+            fi
+          done
 
 # allow commands gives agent permission to review PR. 
       - uses: anthropics/claude-code-action@v1
