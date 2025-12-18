@@ -239,11 +239,7 @@ jobs:
           show_full_output: true
           prompt: "Review PR #${{ steps.createPr.outputs.pr_number }} for security issues"
           anthropic_api_key: ${{ secrets.ANTHROPIC_API_KEY }}
+          claude_args: "--system-prompt 'Follow our coding standards' --max-turns 10 --model claude-sonnet-4-5-20250929 --allowedTools gh,git,cat,sed,grep,ls"
 
-          claude_args: |
-            --system-prompt "Follow our coding standards"
-            --max-turns 10
-            --model claude-sonnet-4-5-20250929
-            --allowedTools gh,git,cat,sed,grep,ls
 
                
