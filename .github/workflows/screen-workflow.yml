@@ -215,3 +215,13 @@ jobs:
           PR_NUMBER=$(gh pr view "$BRANCH" --json number --jq '.number')
           echo "pr_number=$PR_NUMBER" >> "$GITHUB_OUTPUT"
           echo "PR Number: $PR_NUMBER"
+
+      - uses: anthropics/claude-code-action@v1
+        with:
+          prompt: "Review this PR for security issues"
+          anthropic_api_key: ${{ secrets.ANTHROPIC_API_KEY }}
+          claude_args: |
+            --system-prompt "Follow our coding standards"
+            --max-turns 10
+            --model claude-sonnet-4-5-20250929
+            
