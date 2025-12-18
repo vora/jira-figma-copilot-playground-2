@@ -11,7 +11,7 @@ permissions:
 jobs:
   handle_screen:
     runs-on: ubuntu-latest
-    # environment: figma-jam
+    environment: figma-jam
     env:
       FIGMA_TOKEN: ${{ secrets.FIGMA_TOKEN }}
       GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
