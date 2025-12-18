@@ -236,6 +236,7 @@ jobs:
 # allow commands gives agent permission to review PR. 
       - uses: anthropics/claude-code-action@v1
         with:
+          show_full_output: true
           prompt: "Review PR #${{ steps.createPr.outputs.pr_number }} for security issues"
           anthropic_api_key: ${{ secrets.ANTHROPIC_API_KEY }}
           claude_args: |
