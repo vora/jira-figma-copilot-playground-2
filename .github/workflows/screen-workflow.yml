@@ -244,5 +244,6 @@ jobs:
             --system-prompt "Follow our coding standards"
             --max-turns 10
             --model claude-sonnet-4-5-20250929
+            --allowedTools gh,git,cat,sed,grep,ls
 
                
