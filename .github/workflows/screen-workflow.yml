@@ -221,15 +221,10 @@ jobs:
           PR_NUMBER=$(gh pr view "$BRANCH" --json number --jq '.number')
           echo "pr_number=$PR_NUMBER" >> "$GITHUB_OUTPUT"
           echo "PR Number: $PR_NUMBER"
+          echo "pr_url=$PR_URL" >> "$GITHUB_OUTPUT"
+          echo "PR URL: $PR_URL"
 
-          PR_URL=$(gh pr create \
-          --title "Feature $ISSUE_KEY: $SUMMARY" \
-          --body "Auto-generated scaffold from Copilot for Jira issue $ISSUE_KEY" \
-          --base main \
-          --json url \
-          --jq '.url')
-
-          echo "pr_url=$PR_URL" >> $GITHUB_OUTPUT
+          
 
       - name: Check available commands
         run: |
