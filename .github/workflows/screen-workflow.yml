@@ -222,6 +222,15 @@ jobs:
           echo "pr_number=$PR_NUMBER" >> "$GITHUB_OUTPUT"
           echo "PR Number: $PR_NUMBER"
 
+          PR_URL=$(gh pr create \
+          --title "Feature $ISSUE_KEY: $SUMMARY" \
+          --body "Auto-generated scaffold from Copilot for Jira issue $ISSUE_KEY" \
+          --base main \
+          --json url \
+          --jq '.url')
+
+          echo "pr_url=$PR_URL" >> $GITHUB_OUTPUT
+
       - name: Check available commands
         run: |
           echo "Checking commands..."
@@ -237,7 +246,7 @@ jobs:
       - uses: anthropics/claude-code-action@v1
         with:
           show_full_output: true
-          prompt: "Review PR #${{ steps.createPr.outputs.pr_number }} for security issues"
+          prompt: "Review the pull request at ${{ steps.createPr.outputs.pr_url }} for security issues"
           anthropic_api_key: ${{ secrets.ANTHROPIC_API_KEY }}
           claude_args: "--system-prompt 'Follow our coding standards' --max-turns 10 --model claude-sonnet-4-5-20250929 --allowedTools gh,git,cat,sed,grep,ls"
 
