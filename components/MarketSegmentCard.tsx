@@ -63,7 +63,7 @@ const MarketSegmentCard: React.FC<MarketSegmentCardProps> = ({
           <div key={index} className="flex items-center justify-between">
             <div className="flex items-center space-x-3">
               <div className={`w-1 h-6 rounded-full ${getColorClasses(item.color)}`} />
-              <span className="text-slate-300 text-sm font-medium">{item.label}</span>
+              <span className="text-white text-sm font-medium">{item.label}</span>
             </div>
             <span className={`text-2xl font-bold ${getTextColorClasses(item.color)}`}>
               {item.count}
