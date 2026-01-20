@@ -167,7 +167,7 @@ When working with GitHub Actions:
 - Generated components should never deviate from the provided Figma design
 - The automation creates PRs but doesn't merge them - manual review is required
 - When starting a new feature, first use the figma MCP to pull the design
-- When starting a new feature, if the user is currently on the "main" branch, create a new branch using git first before starting any work
+- When starting a new feature, if the user is currently on the "main" or "feat/agentic-coding-demo" branches, create a new branch using git first before starting any work
 
 ## Instructions for MCP Tool Use
 
