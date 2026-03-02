@@ -54,16 +54,18 @@ const MarketSegmentCard: React.FC<MarketSegmentCardProps> = ({
   return (
     <div className="bg-slate-700 rounded-xl p-6 w-80">
       <div className="mb-6">
-        <p className="text-slate-400 text-sm font-medium mb-1">{subtitle}</p>
-        <h3 className="text-white text-lg font-semibold">{title}</h3>
+        <h3 className="text-gray-300 text-sm font-medium mb-1">{subtitle}</h3>
+        <h2 className="text-white text-xl font-semibold">{title}</h2>
       </div>
       
       <div className="space-y-4">
         {statusItems.map((item, index) => (
           <div key={index} className="flex items-center justify-between">
             <div className="flex items-center space-x-3">
-              <div className={`w-1 h-6 rounded-full ${getColorClasses(item.color)}`} />
-              <span className="text-slate-300 text-sm font-medium">{item.label}</span>
+              <div className="flex items-center space-x-2">
+                <div className={`w-1 h-6 rounded-full ${getColorClasses(item.color)}`}></div>
+                <span className="text-gray-300 text-sm font-medium">{item.label}</span>
+              </div>
             </div>
             <span className={`text-2xl font-bold ${getTextColorClasses(item.color)}`}>
               {item.count}
@@ -76,3 +78,18 @@ const MarketSegmentCard: React.FC<MarketSegmentCardProps> = ({
 };
 
 export default MarketSegmentCard;
+
+// Usage example:
+// const statusData = [
+//   { label: 'Action Required', count: 1, color: 'teal' },
+//   { label: 'Submitted', count: 23, color: 'blue' },
+//   { label: 'In Progress', count: 26, color: 'yellow' },
+//   { label: 'Completed', count: 98, color: 'green' },
+//   { label: 'Not Approved', count: 17, color: 'red' }
+// ];
+//
+// <MarketSegmentCard 
+//   title="Medicare, Small Group(s)"
+//   subtitle="Market Segment(s) Supported"
+//   statusItems={statusData}
+// />
